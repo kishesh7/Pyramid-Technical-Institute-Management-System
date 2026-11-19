@@ -4,3 +4,7 @@
 !.env.example
 
 /src/generated/prisma
+node_modules/
+.next/
+.env
+.env.*
