@@ -1,0 +1,485 @@
+
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+
+type EnrollmentStatus = "PENDING" | "CONTACTED" | "APPROVED" | "REJECTED";
+
+type Application = {
+  id: string;
+  fullName: string;
+  age: number;
+  phone: string;
+  email: string | null;
+  address: string;
+  educationLevel: string | null;
+  gender: string | null;
+  motivation: string | null;
+  status: EnrollmentStatus;
+  adminNotes: string | null;
+  reviewedAt: string | null;
+  createdAt: string;
+  program: {
+    id: string;
+    name: string;
+  };
+};
+
+type Summary = {
+  total: number;
+  pending: number;
+  contacted: number;
+  approved: number;
+  rejected: number;
+};
+
+const filters = [
+  "ALL",
+  "PENDING",
+  "CONTACTED",
+  "APPROVED",
+  "REJECTED",
+] as const;
+
+const statusStyles: Record<EnrollmentStatus, string> = {
+  PENDING: "bg-amber-100 text-amber-800",
+  CONTACTED: "bg-sky-100 text-sky-800",
+  APPROVED: "bg-sky-100 text-sky-800",
+  REJECTED: "bg-rose-100 text-rose-800",
+};
+
+const emptySummary: Summary = {
+  total: 0,
+  pending: 0,
+  contacted: 0,
+  approved: 0,
+  rejected: 0,
+};
+
+export default function EnrollmentsPage() {
+  const [applications, setApplications] = useState<Application[]>([]);
+  const [summary, setSummary] = useState<Summary>(emptySummary);
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState<(typeof filters)[number]>("ALL");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [selected, setSelected] = useState<Application | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [notes, setNotes] = useState("");
+  const [notice, setNotice] = useState("");
+
+  const loadApplications = useCallback(async () => {
+    setLoading(true);
+    setError("");
+
+    try {
+      const params = new URLSearchParams({
+        search,
+        status,
+        page: String(page),
+      });
+
+      const response = await fetch(`/api/enrollments?${params.toString()}`);
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Unable to load applications.");
+      }
+
+      setApplications(result.applications);
+      setSummary(result.summary);
+      setTotalPages(result.pagination.totalPages || 1);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Something went wrong."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [search, status, page]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      void loadApplications();
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [loadApplications]);
+
+  function openApplication(application: Application) {
+    setSelected(application);
+    setNotes(application.adminNotes ?? "");
+    setNotice("");
+  }
+
+  async function updateApplication(
+    nextStatus?: EnrollmentStatus
+  ) {
+    if (!selected) return;
+
+    setSaving(true);
+    setNotice("");
+
+    try {
+      const payload: {
+        adminNotes: string;
+        status?: EnrollmentStatus;
+      } = {
+        adminNotes: notes,
+      };
+
+      if (nextStatus) {
+        payload.status = nextStatus;
+      }
+
+      const response = await fetch(
+        `/api/enrollments/${encodeURIComponent(selected.id)}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Unable to update application.");
+      }
+
+      setSelected(result.application);
+      setNotes(result.application.adminNotes ?? "");
+      setNotice("Application updated successfully.");
+
+      await loadApplications();
+    } catch (err) {
+      setNotice(
+        err instanceof Error ? err.message : "Unable to update application."
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const statCards = [
+    { label: "Total Applications", value: summary.total, style: "border-slate-200" },
+    { label: "Pending", value: summary.pending, style: "border-amber-300" },
+    { label: "Contacted", value: summary.contacted, style: "border-sky-300" },
+    { label: "Approved", value: summary.approved, style: "border-sky-300" },
+    { label: "Rejected", value: summary.rejected, style: "border-rose-300" },
+  ];
+
+  return (
+    <div className="mx-auto max-w-7xl space-y-6">
+      <div className="relative overflow-hidden rounded-[24px] border border-sky-100 bg-[linear-gradient(135deg,#ffffff_0%,#eff8ff_58%,#dff3ff_100%)] px-6 py-7 shadow-[0_18px_50px_rgba(14,116,144,0.10)]">
+        <p className="text-xs font-bold uppercase tracking-[0.22em] text-sky-700">
+          Administration
+        </p>
+        <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-900">
+          Enrollment Applications
+        </h1>
+        <p className="mt-3 text-sm leading-6 text-slate-500">
+          Review and manage training program applications.
+        </p>
+      </div>
+
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        {statCards.map((card) => (
+          <div
+            key={card.label}
+            className={`rounded-2xl border-l-4 ${card.style} bg-white p-5 shadow-[0_12px_32px_rgba(14,116,144,0.07)]`}
+          >
+            <p className="text-sm text-slate-500">{card.label}</p>
+            <p className="mt-2 text-3xl font-bold text-slate-900">
+              {card.value}
+            </p>
+          </div>
+        ))}
+      </section>
+
+      <section className="overflow-hidden rounded-2xl border border-sky-100/80 bg-white shadow-[0_14px_40px_rgba(14,116,144,0.08)]">
+        <div className="flex flex-col gap-4 border-b border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="font-semibold text-slate-900">Applications</h2>
+            <p className="text-sm text-slate-500">
+              Select an application to review its details.
+            </p>
+          </div>
+
+          <input
+            type="search"
+            value={search}
+            onChange={(event) => {
+              setSearch(event.target.value);
+              setPage(1);
+            }}
+            placeholder="Search name, phone, email, program..."
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100 sm:max-w-sm"
+          />
+        </div>
+
+        <div className="flex gap-2 overflow-x-auto border-b border-slate-200 px-4 py-3">
+          {filters.map((filter) => (
+            <button
+              key={filter}
+              type="button"
+              onClick={() => {
+                setStatus(filter);
+                setPage(1);
+              }}
+              className={`whitespace-nowrap rounded-lg px-3 py-2 text-xs font-semibold transition ${
+                status === filter
+                  ? "bg-sky-700 text-white"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              }`}
+            >
+              {filter === "ALL"
+                ? "All"
+                : filter.charAt(0) + filter.slice(1).toLowerCase()}
+            </button>
+          ))}
+        </div>
+
+        {error && (
+          <div className="m-4 rounded-lg bg-rose-50 p-3 text-sm text-rose-700">
+            {error}
+          </div>
+        )}
+
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[850px] text-left text-sm">
+            <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+              <tr>
+                <th className="px-5 py-4">Applicant</th>
+                <th className="px-5 py-4">Program</th>
+                <th className="px-5 py-4">Phone</th>
+                <th className="px-5 py-4">Submitted</th>
+                <th className="px-5 py-4">Status</th>
+                <th className="px-5 py-4">Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {loading ? (
+                <tr>
+                  <td colSpan={6} className="px-5 py-12 text-center text-slate-500">
+                    Loading applications...
+                  </td>
+                </tr>
+              ) : applications.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-5 py-12 text-center text-slate-500">
+                    No applications found.
+                  </td>
+                </tr>
+              ) : (
+                applications.map((application) => (
+                  <tr key={application.id} className="hover:bg-slate-50">
+                    <td className="px-5 py-4">
+                      <p className="font-semibold text-slate-900">
+                        {application.fullName}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        {application.email || "No email provided"}
+                      </p>
+                    </td>
+                    <td className="px-5 py-4 text-slate-700">
+                      {application.program.name}
+                    </td>
+                    <td className="px-5 py-4 text-slate-700">
+                      {application.phone}
+                    </td>
+                    <td className="px-5 py-4 text-slate-600">
+                      {new Date(application.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-5 py-4">
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs font-semibold ${statusStyles[application.status]}`}
+                      >
+                        {application.status}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4">
+                      <button
+                        type="button"
+                        onClick={() => openApplication(application)}
+                        className="font-semibold text-sky-700 hover:text-sky-900"
+                      >
+                        View details
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="flex items-center justify-between border-t border-slate-200 px-5 py-4">
+          <p className="text-xs text-slate-500">
+            Page {page} of {totalPages}
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              disabled={page <= 1 || loading}
+              onClick={() => setPage((current) => current - 1)}
+              className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 disabled:opacity-40"
+            >
+              Previous
+            </button>
+            <button
+              type="button"
+              disabled={page >= totalPages || loading}
+              onClick={() => setPage((current) => current + 1)}
+              className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 disabled:opacity-40"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {selected && (
+        <div
+          className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/50 p-4"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget && !saving) {
+              setSelected(null);
+            }
+          }}
+        >
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="application-dialog-title"
+            className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-2xl"
+          >
+            <div className="flex items-start justify-between border-b border-slate-200 p-5">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-sky-700">
+                  Application details
+                </p>
+                <h2
+                  id="application-dialog-title"
+                  className="mt-1 text-xl font-bold text-slate-900"
+                >
+                  {selected.fullName}
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelected(null)}
+                disabled={saving}
+                aria-label="Close details"
+                className="rounded-lg px-3 py-1 text-xl text-slate-500 hover:bg-slate-100"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="grid gap-4 p-5 sm:grid-cols-2">
+              {[
+                ["Age", String(selected.age)],
+                ["Phone", selected.phone],
+                ["Email", selected.email || "Not provided"],
+                ["Program", selected.program.name],
+                ["Education", selected.educationLevel || "Not provided"],
+                ["Gender", selected.gender || "Not provided"],
+                ["Address", selected.address],
+                ["Submitted", new Date(selected.createdAt).toLocaleString()],
+              ].map(([label, value]) => (
+                <div key={label}>
+                  <p className="text-xs font-medium text-slate-500">{label}</p>
+                  <p className="mt-1 break-words text-sm font-medium text-slate-800">
+                    {value}
+                  </p>
+                </div>
+              ))}
+
+              {selected.motivation && (
+                <div className="sm:col-span-2">
+                  <p className="text-xs font-medium text-slate-500">
+                    Motivation
+                  </p>
+                  <p className="mt-1 whitespace-pre-wrap text-sm text-slate-800">
+                    {selected.motivation}
+                  </p>
+                </div>
+              )}
+
+              <div className="sm:col-span-2">
+                <label
+                  htmlFor="adminNotes"
+                  className="text-xs font-semibold text-slate-600"
+                >
+                  Admin review notes
+                </label>
+                <textarea
+                  id="adminNotes"
+                  rows={4}
+                  maxLength={3000}
+                  value={notes}
+                  onChange={(event) => setNotes(event.target.value)}
+                  placeholder="Write internal review notes..."
+                  className="mt-2 w-full rounded-lg border border-slate-300 p-3 text-sm outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 bg-slate-50 p-5">
+              <div className="text-xs text-slate-500">
+                Current status: <strong>{selected.status}</strong>
+                {notice && (
+                  <p className="mt-1 text-sky-700">{notice}</p>
+                )}
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  disabled={saving}
+                  onClick={() => void updateApplication()}
+                  className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 disabled:opacity-50"
+                >
+                  Save notes
+                </button>
+                <button
+                  type="button"
+                  disabled={saving}
+                  onClick={() => void updateApplication("CONTACTED")}
+                  className="rounded-lg bg-sky-700 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
+                >
+                  Mark contacted
+                </button>
+                <button
+                  type="button"
+                  disabled={saving}
+                  onClick={() => void updateApplication("REJECTED")}
+                  className="rounded-lg bg-rose-700 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
+                >
+                  Reject
+                </button>
+                <button
+                  type="button"
+                  disabled={saving}
+                  onClick={() => void updateApplication("APPROVED")}
+                  className="rounded-lg bg-sky-700 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
+                >
+                  Approve
+                </button>
+              </div>
+            </div>
+
+            {saving && (
+              <p className="px-5 pb-4 text-xs text-slate-500">
+                Saving application...
+              </p>
+            )}
+          </section>
+        </div>
+      )}
+    </div>
+  );
+}

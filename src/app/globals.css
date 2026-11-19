@@ -1,0 +1,18 @@
+@import "tailwindcss";
+@source "../";
+
+@theme {
+  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Lora", Georgia, serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 7rem;
+  }
+
+  body {
+    @apply overflow-x-hidden bg-white font-sans text-slate-900 antialiased;
+  }
+}
