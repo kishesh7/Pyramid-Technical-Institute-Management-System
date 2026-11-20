@@ -259,7 +259,7 @@ const [isSubmitting, setIsSubmitting] = useState(false);
   useEffect(() => {
   const loadPrograms = async () => {
     try {
-      const response = await fetch("/api/programs");
+      const response = await fetch("/api/programs", { cache: "no-store" });
       const result = await response.json();
 
       if (!response.ok || !result.success) {
@@ -267,6 +267,7 @@ const [isSubmitting, setIsSubmitting] = useState(false);
       }
 
       setApiPrograms(result.programs);
+      setToast("");
     } catch (error) {
       console.error("Program loading error:", error);
       showToast("Unable to load training programs. Please refresh the page.");
