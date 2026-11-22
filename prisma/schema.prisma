@@ -225,6 +225,20 @@ model Program {
   @@index([projectId])
 }
 
+model TrainingApplication {
+  id                Int      @id @default(autoincrement())
+  applicationNumber String   @unique @db.VarChar(30)
+  applicantName     String   @db.VarChar(255)
+  data              Json
+  status            String   @default("pending") @db.VarChar(30)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([createdAt])
+  @@index([status])
+  @@map("training_applications")
+}
+
 model Volunteer {
   id          String       @id @default(cuid())
   memberId    String       @unique

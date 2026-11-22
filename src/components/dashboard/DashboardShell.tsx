@@ -15,6 +15,7 @@ const navigation = [
   { label: "Donors", href: "/dashboard/donors", icon: "♧" },
   { label: "Projects", href: "/dashboard/projects", icon: "◈" },
   { label: "Reports", href: "/dashboard/reports", icon: "▥" },
+  { label: "Change password", href: "/dashboard/settings/password", icon: "⚿" },
 ];
 
 type EnrollmentSummary = {

@@ -218,7 +218,7 @@ const galleryItems = [
 const siteLinks = [
   { href: "#about", label: "About" },
   { href: "#trainings", label: "Programs" },
-  { href: "#register", label: "Register" },
+  { href: "/training-application", label: "Training Application" },
   { href: "#supporters", label: "Partners" },
   { href: "#impact", label: "Impact" },
   { href: "#contact", label: "Contact" },
@@ -423,7 +423,7 @@ const [isSubmitting, setIsSubmitting] = useState(false);
               <a className="rounded-xl bg-linear-to-r from-sky-600 to-sky-800 px-7 py-3.5 text-sm font-bold text-white shadow-lg shadow-sky-600/30 transition hover:-translate-y-0.5" href="#trainings">
                 Explore Programs
               </a>
-              <a className="rounded-xl border-2 border-sky-300 bg-white px-7 py-3 text-sm font-semibold text-sky-800 transition hover:border-sky-500 hover:bg-sky-50" href="#register">
+              <a className="rounded-xl border-2 border-sky-300 bg-white px-7 py-3 text-sm font-semibold text-sky-800 transition hover:border-sky-500 hover:bg-sky-50" href="/training-application">
                 Register Today
               </a>
             </div>
@@ -800,7 +800,7 @@ const [isSubmitting, setIsSubmitting] = useState(false);
             {[
               { title: "Programs", links: ["Computer Hardware & Networking", "Community Health Worker", "Tailoring & Dress Making", "Digital Literacy", "Plumbing & Sanitation", "View All Programs →"], href: "#trainings" },
               { title: "Organization", links: ["About PTI", "Our Partners", "Our Impact", "Gallery", "Contact", "Annual Reports"], hrefs: ["#about", "#supporters", "#impact", "#gallery", "#contact", "#"] },
-              { title: "Quick Links", links: ["Apply Now", "Verify Certificate", "Scholarship Info", "Alumni Network", "Donate", "Volunteer"], hrefs: ["#register", "#", "#", "#", "#", "#"] },
+              { title: "Quick Links", links: ["Apply Now", "Verify Certificate", "Scholarship Info", "Alumni Network", "Donate", "Volunteer"], hrefs: ["/training-application", "#", "#", "#", "#", "#"] },
             ].map((column) => (
               <div key={column.title}>
                 <h3 className="mb-4 text-xs font-bold uppercase tracking-widest">{column.title}</h3>

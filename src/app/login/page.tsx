@@ -34,7 +34,7 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setMessage(data.message || "Invalid email or password.");
+        setMessage(data.error || "Invalid email or password.");
         return;
       }
 
