@@ -223,6 +223,7 @@ CREATE TABLE `EnrollmentApplication` (
     `gender` VARCHAR(191) NULL,
     `address` TEXT NOT NULL,
     `motivation` TEXT NULL,
+    `citizenshipUrl` LONGTEXT NULL,
     `status` ENUM('PENDING', 'CONTACTED', 'APPROVED', 'REJECTED') NOT NULL DEFAULT 'PENDING',
     `adminNotes` TEXT NULL,
     `reviewedAt` DATETIME(3) NULL,

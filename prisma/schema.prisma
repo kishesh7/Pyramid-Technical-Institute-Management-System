@@ -279,6 +279,7 @@ model EnrollmentApplication {
   gender          String?
   address         String           @db.Text
   motivation      String?          @db.Text
+  citizenshipUrl  String?          @db.LongText
   status          EnrollmentStatus @default(PENDING)
   adminNotes      String?          @db.Text
   reviewedAt      DateTime?

@@ -15,6 +15,7 @@ type Application = {
   educationLevel: string | null;
   gender: string | null;
   motivation: string | null;
+  citizenshipUrl: string | null;
   status: EnrollmentStatus;
   adminNotes: string | null;
   reviewedAt: string | null;
@@ -69,6 +70,8 @@ export default function EnrollmentsPage() {
   const [saving, setSaving] = useState(false);
   const [notes, setNotes] = useState("");
   const [notice, setNotice] = useState("");
+  const [documentLoadingId, setDocumentLoadingId] = useState<string | null>(null);
+  const [documentError, setDocumentError] = useState("");
 
   const loadApplications = useCallback(async () => {
     setLoading(true);
@@ -108,10 +111,42 @@ export default function EnrollmentsPage() {
     return () => clearTimeout(timer);
   }, [loadApplications]);
 
-  function openApplication(application: Application) {
-    setSelected(application);
+  async function openApplication(application: Application) {
+    setSelected({ ...application, citizenshipUrl: null });
     setNotes(application.adminNotes ?? "");
     setNotice("");
+    setDocumentError("");
+    setDocumentLoadingId(application.id);
+
+    try {
+      const response = await fetch(
+        `/api/enrollments/${encodeURIComponent(application.id)}`
+      );
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Unable to load uploaded document.");
+      }
+
+      setSelected((current) =>
+        current?.id === application.id
+          ? {
+              ...current,
+              citizenshipUrl: result.application.citizenshipUrl,
+            }
+          : current
+      );
+    } catch (err) {
+      setDocumentError(
+        err instanceof Error
+          ? err.message
+          : "Unable to load uploaded document."
+      );
+    } finally {
+      setDocumentLoadingId((current) =>
+        current === application.id ? null : current
+      );
+    }
   }
 
   async function updateApplication(
@@ -149,7 +184,10 @@ export default function EnrollmentsPage() {
         throw new Error(result.message || "Unable to update application.");
       }
 
-      setSelected(result.application);
+      setSelected((current) => ({
+        ...result.application,
+        citizenshipUrl: current?.citizenshipUrl ?? null,
+      }));
       setNotes(result.application.adminNotes ?? "");
       setNotice("Application updated successfully.");
 
@@ -183,7 +221,7 @@ export default function EnrollmentsPage() {
         <p className="mt-3 text-sm leading-6 text-slate-500">
           Review and manage training program applications.
         </p>
-      </div>
+              </div>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         {statCards.map((card) => (
@@ -408,6 +446,52 @@ export default function EnrollmentsPage() {
                   </p>
                 </div>
               )}
+
+              <div className="sm:col-span-2">
+                <p className="text-xs font-medium text-slate-500">
+                  Citizenship / passport document
+                </p>
+                {documentLoadingId === selected.id ? (
+                  <p className="mt-2 text-sm text-slate-500">Loading document...</p>
+                ) : documentError ? (
+                  <p className="mt-2 text-sm text-rose-700">{documentError}</p>
+                ) : selected.citizenshipUrl?.startsWith("data:image/") ? (
+                  <a
+                    href={`/api/enrollments/${encodeURIComponent(selected.id)}/document`}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="Open full-size citizenship or passport image in a new tab"
+                    className="mt-2 block w-fit cursor-zoom-in"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={selected.citizenshipUrl}
+                      alt="Open full-size citizenship or passport document"
+                      className="max-h-[60vh] max-w-full rounded-lg border border-slate-200 object-contain"
+                    />
+                  </a>
+                ) : selected.citizenshipUrl?.startsWith("data:application/pdf;") ? (
+                  <iframe
+                    src={`/api/enrollments/${encodeURIComponent(selected.id)}/document`}
+                    title="Uploaded citizenship or passport PDF"
+                    className="mt-2 h-[60vh] w-full rounded-lg border border-slate-200"
+                  />
+                ) : (
+                  <p className="mt-2 text-sm text-slate-500">
+                    No document uploaded.
+                  </p>
+                )}
+                {selected.citizenshipUrl?.startsWith("data:application/pdf;") && (
+                  <a
+                    href={`/api/enrollments/${encodeURIComponent(selected.id)}/document`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-2 inline-block text-sm font-semibold text-sky-700 hover:text-sky-900"
+                  >
+                    Open PDF in a new tab
+                  </a>
+                )}
+              </div>
 
               <div className="sm:col-span-2">
                 <label

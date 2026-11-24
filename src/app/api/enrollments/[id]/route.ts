@@ -37,6 +37,44 @@ async function requireAdmin() {
   return user;
 }
 
+export async function GET(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const admin = await requireAdmin();
+
+    if (!admin) {
+      return NextResponse.json(
+        { success: false, message: "Unauthorized. Please sign in." },
+        { status: 401 }
+      );
+    }
+
+    const { id } = await params;
+    const application = await prisma.enrollmentApplication.findUnique({
+      where: { id },
+      select: { citizenshipUrl: true },
+    });
+
+    if (!application) {
+      return NextResponse.json(
+        { success: false, message: "Application not found." },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ success: true, application });
+  } catch (error) {
+    console.error("GET enrollment document error:", error);
+
+    return NextResponse.json(
+      { success: false, message: "Unable to retrieve the uploaded document." },
+      { status: 500 }
+    );
+  }
+}
+
 // PATCH: Update enrollment status and admin notes
 export async function PATCH(
   request: NextRequest,
@@ -150,7 +188,22 @@ export async function PATCH(
           : {}),
         ...(hasNotes ? { adminNotes } : {}),
       },
-      include: {
+      select: {
+        id: true,
+        fullName: true,
+        age: true,
+        phone: true,
+        email: true,
+        programId: true,
+        educationLevel: true,
+        gender: true,
+        address: true,
+        motivation: true,
+        status: true,
+        adminNotes: true,
+        reviewedAt: true,
+        createdAt: true,
+        updatedAt: true,
         program: {
           select: {
             id: true,

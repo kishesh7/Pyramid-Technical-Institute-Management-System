@@ -99,7 +99,22 @@ export async function GET(request: NextRequest) {
     const [applications, total, counts] = await Promise.all([
       prisma.enrollmentApplication.findMany({
         where,
-        include: {
+        select: {
+          id: true,
+          fullName: true,
+          age: true,
+          phone: true,
+          email: true,
+          programId: true,
+          educationLevel: true,
+          gender: true,
+          address: true,
+          motivation: true,
+          status: true,
+          adminNotes: true,
+          reviewedAt: true,
+          createdAt: true,
+          updatedAt: true,
           program: {
             select: {
               id: true,
@@ -151,23 +166,26 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const body = await request.formData();
 
-    const fullName = String(body.fullName ?? "").trim();
-    const phone = String(body.phone ?? "").trim();
-    const email = String(body.email ?? "").trim();
-    const address = String(body.address ?? "").trim();
-    const motivation = String(body.motivation ?? "").trim();
-    const educationLevel = String(body.educationLevel ?? "").trim();
-    const gender = String(body.gender ?? "").trim();
-    const programId = String(body.programId ?? "").trim();
-    const age = Number(body.age);
+    const fullName = String(body.get("name") ?? "").trim();
+    const phone = String(body.get("phone") ?? "").trim();
+    const email = String(body.get("email") ?? "").trim();
+    const address = String(body.get("address") ?? "").trim();
+    const motivation = String(body.get("motivation") ?? "").trim();
+    const educationLevel = String(body.get("education") ?? "").trim();
+    const gender = String(body.get("gender") ?? "").trim();
+    const programId = String(body.get("program") ?? "").trim();
+    const age = Number(body.get("age"));
+    const citizenship = body.get("citizenship");
 
     if (
       !fullName ||
       !phone ||
       !address ||
       !programId ||
+      !(citizenship instanceof File) ||
+      citizenship.size === 0 ||
       !Number.isInteger(age) ||
       age < 1 ||
       age > 120
@@ -201,6 +219,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const allowedCitizenshipTypes = ["image/jpeg", "image/png", "application/pdf"];
+    if (
+      citizenship instanceof File &&
+      (!allowedCitizenshipTypes.includes(citizenship.type) ||
+        citizenship.size > 5 * 1024 * 1024)
+    ) {
+      return NextResponse.json(
+        { success: false, message: "Citizenship must be a JPG, PNG or PDF up to 5 MB." },
+        { status: 400 }
+      );
+    }
+
     const program = await prisma.program.findFirst({
       where: {
         id: programId,
@@ -219,6 +249,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const citizenshipBuffer = citizenship instanceof File
+      ? Buffer.from(await citizenship.arrayBuffer())
+      : null;
+    const citizenshipUrl = citizenshipBuffer
+      ? `data:${citizenship.type};base64,${citizenshipBuffer.toString("base64")}`
+      : null;
     const application = await prisma.enrollmentApplication.create({
       data: {
         fullName,
@@ -230,6 +266,7 @@ export async function POST(request: NextRequest) {
         educationLevel: educationLevel || null,
         gender: gender || null,
         programId,
+        citizenshipUrl,
       },
       select: {
         id: true,
@@ -247,7 +284,7 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-  console.error("Enrollment submission failed:", error);
+    console.error("Enrollment submission failed:", error);
 
   return NextResponse.json(
     {

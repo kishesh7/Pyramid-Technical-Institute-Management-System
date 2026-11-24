@@ -318,9 +318,24 @@ const [isSubmitting, setIsSubmitting] = useState(false);
   const gender = String(data.get("gender") ?? "").trim();
   const address = String(data.get("address") ?? "").trim();
   const motivation = String(data.get("motivation") ?? "").trim();
+  const citizenship = data.get("citizenship");
 
-  if (!fullName || !phone || !programId || !address) {
+  if (
+    !fullName ||
+    !phone ||
+    !programId ||
+    !address ||
+    !(citizenship instanceof File) ||
+    citizenship.size === 0
+  ) {
     showToast("⚠️ Please fill in all required fields.");
+    return;
+  }
+
+  if (
+    citizenship.size > 5 * 1024 * 1024
+  ) {
+    showToast("⚠️ Each uploaded file must be 5 MB or smaller.");
     return;
   }
 
@@ -334,20 +349,7 @@ const [isSubmitting, setIsSubmitting] = useState(false);
   try {
     const response = await fetch("/api/enrollments", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        fullName,
-        age,
-        phone,
-        email,
-        programId,
-        educationLevel,
-        gender,
-        address,
-        motivation,
-      }),
+      body: data,
     });
 
     const result = await response.json();
@@ -423,7 +425,7 @@ const [isSubmitting, setIsSubmitting] = useState(false);
               <a className="rounded-xl bg-linear-to-r from-sky-600 to-sky-800 px-7 py-3.5 text-sm font-bold text-white shadow-lg shadow-sky-600/30 transition hover:-translate-y-0.5" href="#trainings">
                 Explore Programs
               </a>
-              <a className="rounded-xl border-2 border-sky-300 bg-white px-7 py-3 text-sm font-semibold text-sky-800 transition hover:border-sky-500 hover:bg-sky-50" href="/training-application">
+              <a className="rounded-xl border-2 border-sky-300 bg-white px-7 py-3 text-sm font-semibold text-sky-800 transition hover:border-sky-500 hover:bg-sky-50" href="#register">
                 Register Today
               </a>
             </div>
@@ -627,6 +629,17 @@ const [isSubmitting, setIsSubmitting] = useState(false);
               </div>
               <label className="mt-4 block text-xs font-semibold text-white/75">Address *
                 <input aria-required="true" className="mt-2 w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/40 focus:border-white/60" name="address" placeholder="e.g., Itahari-4, Sunsari" />
+              </label>
+              <label className="mt-4 block text-xs font-semibold text-white/75">Citizenship / Passport Document *
+                <input
+                  aria-required="true"
+                  accept="image/jpeg,image/png,application/pdf"
+                  className="mt-2 block w-full rounded-xl border border-white/20 bg-white/10 px-3 py-2.5 text-xs text-white file:mr-3 file:rounded-lg file:border-0 file:bg-white file:px-3 file:py-2 file:text-xs file:font-bold file:text-sky-900"
+                  name="citizenship"
+                  required
+                  type="file"
+                />
+                <span className="mt-1 block text-[10px] text-white/50">JPG, PNG or PDF · Maximum 5 MB</span>
               </label>
               <label className="mt-4 block text-xs font-semibold text-white/75">Why do you want to join?
                 <textarea className="mt-2 w-full resize-y rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/40 focus:border-white/60" name="motivation" placeholder="Tell us about your motivation..." rows={3} />

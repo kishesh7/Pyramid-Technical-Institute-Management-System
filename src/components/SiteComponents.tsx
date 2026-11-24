@@ -85,7 +85,7 @@ export function SiteHeader({
     <>
       <div className="fixed inset-x-0 top-0 z-50 bg-linear-to-r from-sky-800 to-teal-700 px-3 py-2 text-center text-[11px] font-medium text-white sm:px-5 sm:text-sm">
         🎓 New Batch Starting: Computer Hardware &amp; Networking —{" "}
-        <a className="font-bold text-amber-300 hover:text-amber-200" href="/training-application" onClick={onNavigate}>
+        <a className="font-bold text-amber-300 hover:text-amber-200" href="#register" onClick={onNavigate}>
           Apply Now →
         </a>
       </div>
@@ -107,7 +107,7 @@ export function SiteHeader({
               </li>
             ))}
             <li>
-              <a className="ml-1 rounded-xl bg-linear-to-r from-sky-600 to-sky-800 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sky-600/20 transition hover:-translate-y-0.5" href="/training-application">
+              <a className="ml-1 rounded-xl bg-linear-to-r from-sky-600 to-sky-800 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sky-600/20 transition hover:-translate-y-0.5" href="#register">
                 Enroll Now
               </a>
             </li>
@@ -137,7 +137,7 @@ export function SiteHeader({
               {link.label}
             </a>
           ))}
-          <a className="mt-4 rounded-xl bg-sky-700 px-5 py-3 text-center font-semibold text-white" href="/training-application" onClick={onNavigate}>
+          <a className="mt-4 rounded-xl bg-sky-700 px-5 py-3 text-center font-semibold text-white" href="#register" onClick={onNavigate}>
             Enroll Now
           </a>
         </nav>
@@ -195,7 +195,7 @@ export function TrainingCard({
           {tab === "upcoming" ? program.seats : tab === "ongoing" ? `● ${program.footer}` : `✓ ${program.footer}`}
         </span>
         {tab === "upcoming" ? (
-          <a className="rounded-lg bg-linear-to-r from-sky-600 to-sky-800 px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:-translate-y-0.5" href="/training-application">
+          <a className="rounded-lg bg-linear-to-r from-sky-600 to-sky-800 px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:-translate-y-0.5" href="#register">
             Apply Now
           </a>
         ) : tab === "ongoing" ? (
