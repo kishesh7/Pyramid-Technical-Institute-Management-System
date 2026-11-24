@@ -34,7 +34,7 @@ async function requireAdmin() {
 }
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -46,9 +46,20 @@ export async function GET(
     }
 
     const { id } = await params;
+    const documentType = new URL(request.url).searchParams.get("type");
+    if (documentType !== "citizenship" && documentType !== "passportPhoto") {
+      return NextResponse.json(
+        { success: false, message: "Invalid document type." },
+        { status: 400 }
+      );
+    }
+
     const application = await prisma.enrollmentApplication.findUnique({
       where: { id },
-      select: { citizenshipUrl: true },
+      select: {
+        citizenshipUrl: true,
+        passportPhotoUrl: true,
+      },
     });
 
     if (!application) {
@@ -60,7 +71,9 @@ export async function GET(
 
     const match =
       /^data:(image\/(?:jpeg|png)|application\/pdf);base64,([A-Za-z0-9+/=]+)$/.exec(
-        application.citizenshipUrl ?? ""
+        (documentType === "citizenship"
+          ? application.citizenshipUrl
+          : application.passportPhotoUrl) ?? ""
       );
 
     if (!match) {
@@ -81,7 +94,7 @@ export async function GET(
     return new Response(Buffer.from(match[2], "base64"), {
       headers: {
         "Content-Type": contentType,
-        "Content-Disposition": `inline; filename="enrollment-document.${extension}"`,
+        "Content-Disposition": `inline; filename="${documentType}.${extension}"`,
         "Cache-Control": "private, no-store",
         "X-Content-Type-Options": "nosniff",
       },

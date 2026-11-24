@@ -178,6 +178,7 @@ export async function POST(request: NextRequest) {
     const programId = String(body.get("program") ?? "").trim();
     const age = Number(body.get("age"));
     const citizenship = body.get("citizenship");
+    const passportPhoto = body.get("passportPhoto");
 
     if (
       !fullName ||
@@ -186,6 +187,8 @@ export async function POST(request: NextRequest) {
       !programId ||
       !(citizenship instanceof File) ||
       citizenship.size === 0 ||
+      !(passportPhoto instanceof File) ||
+      passportPhoto.size === 0 ||
       !Number.isInteger(age) ||
       age < 1 ||
       age > 120
@@ -231,6 +234,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (
+      passportPhoto instanceof File &&
+      (!["image/jpeg", "image/png"].includes(passportPhoto.type) ||
+        passportPhoto.size > 5 * 1024 * 1024)
+    ) {
+      return NextResponse.json(
+        { success: false, message: "Passport-size photo must be a JPG or PNG up to 5 MB." },
+        { status: 400 }
+      );
+    }
+
     const program = await prisma.program.findFirst({
       where: {
         id: programId,
@@ -255,6 +269,12 @@ export async function POST(request: NextRequest) {
     const citizenshipUrl = citizenshipBuffer
       ? `data:${citizenship.type};base64,${citizenshipBuffer.toString("base64")}`
       : null;
+    const passportPhotoBuffer = passportPhoto instanceof File
+      ? Buffer.from(await passportPhoto.arrayBuffer())
+      : null;
+    const passportPhotoUrl = passportPhotoBuffer
+      ? `data:${passportPhoto.type};base64,${passportPhotoBuffer.toString("base64")}`
+      : null;
     const application = await prisma.enrollmentApplication.create({
       data: {
         fullName,
@@ -267,6 +287,7 @@ export async function POST(request: NextRequest) {
         gender: gender || null,
         programId,
         citizenshipUrl,
+        passportPhotoUrl,
       },
       select: {
         id: true,

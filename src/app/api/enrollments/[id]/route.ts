@@ -54,7 +54,10 @@ export async function GET(
     const { id } = await params;
     const application = await prisma.enrollmentApplication.findUnique({
       where: { id },
-      select: { citizenshipUrl: true },
+      select: {
+        citizenshipUrl: true,
+        passportPhotoUrl: true,
+      },
     });
 
     if (!application) {

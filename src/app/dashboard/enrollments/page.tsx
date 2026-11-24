@@ -16,6 +16,7 @@ type Application = {
   gender: string | null;
   motivation: string | null;
   citizenshipUrl: string | null;
+  passportPhotoUrl: string | null;
   status: EnrollmentStatus;
   adminNotes: string | null;
   reviewedAt: string | null;
@@ -112,7 +113,11 @@ export default function EnrollmentsPage() {
   }, [loadApplications]);
 
   async function openApplication(application: Application) {
-    setSelected({ ...application, citizenshipUrl: null });
+    setSelected({
+      ...application,
+      citizenshipUrl: null,
+      passportPhotoUrl: null,
+    });
     setNotes(application.adminNotes ?? "");
     setNotice("");
     setDocumentError("");
@@ -133,6 +138,7 @@ export default function EnrollmentsPage() {
           ? {
               ...current,
               citizenshipUrl: result.application.citizenshipUrl,
+              passportPhotoUrl: result.application.passportPhotoUrl,
             }
           : current
       );
@@ -187,6 +193,7 @@ export default function EnrollmentsPage() {
       setSelected((current) => ({
         ...result.application,
         citizenshipUrl: current?.citizenshipUrl ?? null,
+        passportPhotoUrl: current?.passportPhotoUrl ?? null,
       }));
       setNotes(result.application.adminNotes ?? "");
       setNotice("Application updated successfully.");
@@ -447,50 +454,69 @@ export default function EnrollmentsPage() {
                 </div>
               )}
 
-              <div className="sm:col-span-2">
-                <p className="text-xs font-medium text-slate-500">
-                  Citizenship / passport document
-                </p>
-                {documentLoadingId === selected.id ? (
-                  <p className="mt-2 text-sm text-slate-500">Loading document...</p>
-                ) : documentError ? (
-                  <p className="mt-2 text-sm text-rose-700">{documentError}</p>
-                ) : selected.citizenshipUrl?.startsWith("data:image/") ? (
-                  <a
-                    href={`/api/enrollments/${encodeURIComponent(selected.id)}/document`}
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label="Open full-size citizenship or passport image in a new tab"
-                    className="mt-2 block w-fit cursor-zoom-in"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={selected.citizenshipUrl}
-                      alt="Open full-size citizenship or passport document"
-                      className="max-h-[60vh] max-w-full rounded-lg border border-slate-200 object-contain"
-                    />
-                  </a>
-                ) : selected.citizenshipUrl?.startsWith("data:application/pdf;") ? (
-                  <iframe
-                    src={`/api/enrollments/${encodeURIComponent(selected.id)}/document`}
-                    title="Uploaded citizenship or passport PDF"
-                    className="mt-2 h-[60vh] w-full rounded-lg border border-slate-200"
-                  />
-                ) : (
-                  <p className="mt-2 text-sm text-slate-500">
-                    No document uploaded.
-                  </p>
-                )}
-                {selected.citizenshipUrl?.startsWith("data:application/pdf;") && (
-                  <a
-                    href={`/api/enrollments/${encodeURIComponent(selected.id)}/document`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="mt-2 inline-block text-sm font-semibold text-sky-700 hover:text-sky-900"
-                  >
-                    Open PDF in a new tab
-                  </a>
-                )}
+              <div className="sm:col-span-2 grid gap-4 sm:grid-cols-2">
+                {[
+                  {
+                    label: "Citizenship / Passport Document",
+                    type: "citizenship" as const,
+                    value: selected.citizenshipUrl,
+                  },
+                  {
+                    label: "Passport-size Photo",
+                    type: "passportPhoto" as const,
+                    value: selected.passportPhotoUrl,
+                  },
+                ].map((document) => {
+                  const documentHref = `/api/enrollments/${encodeURIComponent(selected.id)}/document?type=${document.type}`;
+
+                  return (
+                    <div key={document.type}>
+                      <p className="text-xs font-medium text-slate-500">
+                        {document.label}
+                      </p>
+                      {documentLoadingId === selected.id ? (
+                        <p className="mt-2 text-sm text-slate-500">Loading document...</p>
+                      ) : documentError ? (
+                        <p className="mt-2 text-sm text-rose-700">{documentError}</p>
+                      ) : document.value?.startsWith("data:image/") ? (
+                        <a
+                          href={documentHref}
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label={`Open full-size ${document.label.toLowerCase()} in a new tab`}
+                          className="mt-2 block w-fit cursor-zoom-in"
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={document.value}
+                            alt={`Open full-size ${document.label.toLowerCase()}`}
+                            className="max-h-[60vh] max-w-full rounded-lg border border-slate-200 object-contain"
+                          />
+                        </a>
+                      ) : document.value?.startsWith("data:application/pdf;") ? (
+                        <>
+                          <iframe
+                            src={documentHref}
+                            title={document.label}
+                            className="mt-2 h-[60vh] w-full rounded-lg border border-slate-200"
+                          />
+                          <a
+                            href={documentHref}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="mt-2 inline-block text-sm font-semibold text-sky-700 hover:text-sky-900"
+                          >
+                            Open PDF in a new tab
+                          </a>
+                        </>
+                      ) : (
+                        <p className="mt-2 text-sm text-slate-500">
+                          No document uploaded.
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
 
               <div className="sm:col-span-2">

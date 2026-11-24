@@ -319,6 +319,7 @@ const [isSubmitting, setIsSubmitting] = useState(false);
   const address = String(data.get("address") ?? "").trim();
   const motivation = String(data.get("motivation") ?? "").trim();
   const citizenship = data.get("citizenship");
+  const passportPhoto = data.get("passportPhoto");
 
   if (
     !fullName ||
@@ -326,16 +327,21 @@ const [isSubmitting, setIsSubmitting] = useState(false);
     !programId ||
     !address ||
     !(citizenship instanceof File) ||
-    citizenship.size === 0
+    citizenship.size === 0 ||
+    !(passportPhoto instanceof File) ||
+    passportPhoto.size === 0
   ) {
     showToast("⚠️ Please fill in all required fields.");
     return;
   }
 
-  if (
-    citizenship.size > 5 * 1024 * 1024
-  ) {
+  if (citizenship.size > 5 * 1024 * 1024 || passportPhoto.size > 5 * 1024 * 1024) {
     showToast("⚠️ Each uploaded file must be 5 MB or smaller.");
+    return;
+  }
+
+  if (!["image/jpeg", "image/png"].includes(passportPhoto.type)) {
+    showToast("⚠️ Passport-size photo must be a JPG or PNG image.");
     return;
   }
 
@@ -604,10 +610,10 @@ const [isSubmitting, setIsSubmitting] = useState(false);
               </div>
               <label className="mt-4 block text-xs font-semibold text-white/75">Select Training Program *
               <select aria-required="true"  required className="mt-2 w-full rounded-xl border border-white/20 bg-sky-900 px-4 py-3 text-sm text-white outline-none focus:border-white/60" defaultValue="" name="program" disabled={programsLoading || apiPrograms.length === 0}
-                       ><option value="">{programsLoading? "Loading programs...": apiPrograms.length === 0  ? "No programs available"  : "-- Choose a Program --"}</option>
+                       ><option className="bg-white text-slate-900" value="">{programsLoading? "Loading programs...": apiPrograms.length === 0  ? "No programs available"  : "-- Choose a Program --"}</option>
 
                    {apiPrograms.map((program) => (
-                           <option key={program.id} value={program.id}>
+                           <option className="bg-white text-slate-900" key={program.id} value={program.id}>
                                {program.name}
                             </option>
                         ))}
@@ -630,17 +636,30 @@ const [isSubmitting, setIsSubmitting] = useState(false);
               <label className="mt-4 block text-xs font-semibold text-white/75">Address *
                 <input aria-required="true" className="mt-2 w-full rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/40 focus:border-white/60" name="address" placeholder="e.g., Itahari-4, Sunsari" />
               </label>
-              <label className="mt-4 block text-xs font-semibold text-white/75">Citizenship / Passport Document *
-                <input
-                  aria-required="true"
-                  accept="image/jpeg,image/png,application/pdf"
-                  className="mt-2 block w-full rounded-xl border border-white/20 bg-white/10 px-3 py-2.5 text-xs text-white file:mr-3 file:rounded-lg file:border-0 file:bg-white file:px-3 file:py-2 file:text-xs file:font-bold file:text-sky-900"
-                  name="citizenship"
-                  required
-                  type="file"
-                />
-                <span className="mt-1 block text-[10px] text-white/50">JPG, PNG or PDF · Maximum 5 MB</span>
-              </label>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <label className="block text-xs font-semibold text-white/75">Citizenship / Passport Document *
+                  <input
+                    aria-required="true"
+                    accept="image/jpeg,image/png,application/pdf"
+                    className="mt-2 block w-full rounded-xl border border-white/20 bg-white/10 px-3 py-2.5 text-xs text-white file:mr-3 file:rounded-lg file:border-0 file:bg-white file:px-3 file:py-2 file:text-xs file:font-bold file:text-sky-900"
+                    name="citizenship"
+                    required
+                    type="file"
+                  />
+                  <span className="mt-1 block text-[10px] text-white/50">JPG, PNG or PDF · Maximum 5 MB</span>
+                </label>
+                <label className="block text-xs font-semibold text-white/75">Passport-size Photo *
+                  <input
+                    aria-required="true"
+                    accept="image/jpeg,image/png"
+                    className="mt-2 block w-full rounded-xl border border-white/20 bg-white/10 px-3 py-2.5 text-xs text-white file:mr-3 file:rounded-lg file:border-0 file:bg-white file:px-3 file:py-2 file:text-xs file:font-bold file:text-sky-900"
+                    name="passportPhoto"
+                    required
+                    type="file"
+                  />
+                  <span className="mt-1 block text-[10px] text-white/50">JPG or PNG · Maximum 5 MB</span>
+                </label>
+              </div>
               <label className="mt-4 block text-xs font-semibold text-white/75">Why do you want to join?
                 <textarea className="mt-2 w-full resize-y rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/40 focus:border-white/60" name="motivation" placeholder="Tell us about your motivation..." rows={3} />
               </label>
@@ -670,7 +689,7 @@ const [isSubmitting, setIsSubmitting] = useState(false);
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 {[
                   ["Office Hours", "Sun – Fri", "9:00 AM – 5:00 PM"],
-                  ["Helpline", "025-581XXX", "+977 9852XXXXXX"],
+                  ["Helpline", "025-588526", "+977 985-2089707"],
                 ].map(([label, line1, line2]) => (
                   <div className="rounded-xl border border-white/15 bg-white/10 p-4" key={label}>
                     <div className="mb-1 text-[10px] font-semibold uppercase tracking-widest text-white/50">{label}</div>
