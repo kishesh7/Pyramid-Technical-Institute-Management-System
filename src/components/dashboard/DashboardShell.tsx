@@ -11,6 +11,7 @@ const navigation = [
   { label: "Dashboard", href: "/dashboard", icon: "⌂" },
   { label: "Members", href: "/dashboard/members", icon: "♙" },
   { label: "Enrollments", href: "/dashboard/enrollments", icon: "▤" },
+  { label: "Partners", href: "/dashboard/partners", icon: "◎" },
   { label: "Beneficiaries", href: "/dashboard/beneficiaries", icon: "♡" },
   { label: "Donors", href: "/dashboard/donors", icon: "♧" },
   { label: "Projects", href: "/dashboard/projects", icon: "◈" },

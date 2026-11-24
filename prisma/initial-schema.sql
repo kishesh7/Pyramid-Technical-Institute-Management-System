@@ -181,6 +181,22 @@ CREATE TABLE `Program` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
+CREATE TABLE `Partner` (
+    `id` VARCHAR(191) NOT NULL,
+    `name` VARCHAR(191) NOT NULL,
+    `mark` VARCHAR(8) NOT NULL,
+    `type` VARCHAR(191) NOT NULL,
+    `since` VARCHAR(191) NOT NULL,
+    `displayOrder` INTEGER NOT NULL DEFAULT 0,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `Partner_name_key`(`name`),
+    INDEX `Partner_displayOrder_idx`(`displayOrder`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `Volunteer` (
     `id` VARCHAR(191) NOT NULL,
     `memberId` VARCHAR(191) NOT NULL,

@@ -225,6 +225,19 @@ model Program {
   @@index([projectId])
 }
 
+model Partner {
+  id            String   @id @default(cuid())
+  name          String   @unique
+  mark          String   @db.VarChar(8)
+  type          String
+  since         String
+  displayOrder  Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([displayOrder])
+}
+
 model TrainingApplication {
   id                Int      @id @default(autoincrement())
   applicationNumber String   @unique @db.VarChar(30)

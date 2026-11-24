@@ -181,19 +181,19 @@ const programs: Record<TrainingTab, TrainingProgram[]> = {
   ],
 };
 
-const partners = [
-  { mark: "UN", name: "UNDP Nepal", type: "International Organization", since: "Partner since 2015", style: "bg-blue-100 text-blue-700" },
-  { mark: "SNV", name: "SNV Nepal", type: "Dutch Development Org.", since: "Partner since 2016", style: "bg-emerald-100 text-emerald-800" },
-  { mark: "GIZ", name: "GIZ Nepal", type: "German Dev. Agency", since: "Partner since 2018", style: "bg-amber-100 text-amber-800" },
-  { mark: "SC", name: "Save the Children", type: "International NGO", since: "Partner since 2014", style: "bg-pink-100 text-pink-800" },
-  { mark: "OXF", name: "Oxfam Nepal", type: "International NGO", since: "Partner since 2017", style: "bg-violet-100 text-violet-800" },
-  { mark: "ADB", name: "Asian Dev. Bank", type: "Multilateral Dev. Bank", since: "Partner since 2019", style: "bg-sky-100 text-sky-800" },
-  { mark: "CTEVT", name: "CTEVT Nepal", type: "Government Body", since: "Affiliated since 2010", style: "bg-green-100 text-green-800" },
-  { mark: "WFP", name: "World Food Programme", type: "UN Agency", since: "Partner since 2020", style: "bg-orange-100 text-orange-800" },
-  { mark: "NPC", name: "Nat. Planning Commission", type: "Government of Nepal", since: "Partner since 2013", style: "bg-sky-50 text-sky-800" },
-  { mark: "HLV", name: "Helvetas Nepal", type: "Swiss Dev. NGO", since: "Partner since 2016", style: "bg-teal-100 text-teal-800" },
-  { mark: "DDC", name: "DDC Sunsari", type: "District Dev. Committee", since: "Partner since 2010", style: "bg-yellow-100 text-yellow-800" },
-  { mark: "WB", name: "World Bank Nepal", type: "Multilateral Dev. Bank", since: "Partner since 2021", style: "bg-purple-100 text-purple-800" },
+const partnerStyles = [
+  "bg-blue-100 text-blue-700",
+  "bg-emerald-100 text-emerald-800",
+  "bg-amber-100 text-amber-800",
+  "bg-pink-100 text-pink-800",
+  "bg-violet-100 text-violet-800",
+  "bg-sky-100 text-sky-800",
+  "bg-green-100 text-green-800",
+  "bg-orange-100 text-orange-800",
+  "bg-sky-50 text-sky-800",
+  "bg-teal-100 text-teal-800",
+  "bg-yellow-100 text-yellow-800",
+  "bg-purple-100 text-purple-800",
 ];
 
 const impactStats = [
@@ -238,6 +238,14 @@ type ApiProgram = {
   endDate: string | null;
 };
 
+type ApiPartner = {
+  id: string;
+  name: string;
+  mark: string;
+  type: string;
+  since: string;
+};
+
 export default function HomePage() {
   
   const [activeTab, setActiveTab] = useState<TrainingTab>("upcoming");
@@ -247,8 +255,11 @@ export default function HomePage() {
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const impactRef = useRef<HTMLElement | null>(null);
   const [apiPrograms, setApiPrograms] = useState<ApiProgram[]>([]);
-const [programsLoading, setProgramsLoading] = useState(true);
-const [isSubmitting, setIsSubmitting] = useState(false);
+  const [programsLoading, setProgramsLoading] = useState(true);
+  const [partners, setPartners] = useState<ApiPartner[]>([]);
+  const [partnersLoading, setPartnersLoading] = useState(true);
+  const [partnersError, setPartnersError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
 
   const showToast = (message: string) => {
@@ -278,6 +289,28 @@ const [isSubmitting, setIsSubmitting] = useState(false);
 
   loadPrograms();
 }, []);
+
+  useEffect(() => {
+    const loadPartners = async () => {
+      try {
+        const response = await fetch("/api/partners", { cache: "no-store" });
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+          throw new Error(result.message || "Unable to load partners.");
+        }
+
+        setPartners(result.partners);
+      } catch (error) {
+        console.error("Partner loading error:", error);
+        setPartnersError("Unable to load our partners. Please refresh the page.");
+      } finally {
+        setPartnersLoading(false);
+      }
+    };
+
+    void loadPartners();
+  }, []);
 
   useEffect(() => {
     const section = impactRef.current;
@@ -710,16 +743,24 @@ const [isSubmitting, setIsSubmitting] = useState(false);
             title="Supported by Leading Organizations"
             description="Our programs are made possible through support of national and international NGOs, government bodies, and development partners."
           />
-          <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {partners.map((partner) => (
-              <article className="rounded-2xl border border-sky-100 bg-white px-4 py-6 text-center transition hover:-translate-y-1 hover:border-sky-300 hover:shadow-lg hover:shadow-sky-100 sm:px-5" key={partner.name}>
-                <div className={`mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full font-display text-base font-bold ${partner.style}`}>{partner.mark}</div>
-                <h3 className="mb-1 text-sm font-bold text-slate-900">{partner.name}</h3>
-                <p className="mb-3 text-xs text-slate-500">{partner.type}</p>
-                <p className="text-[10px] font-bold tracking-wide text-sky-800">{partner.since}</p>
-              </article>
-            ))}
-          </div>
+          {partnersLoading ? (
+            <p className="mt-10 text-center text-sm text-slate-500">Loading partners...</p>
+          ) : partnersError ? (
+            <p className="mt-10 text-center text-sm text-rose-700">{partnersError}</p>
+          ) : partners.length === 0 ? (
+            <p className="mt-10 text-center text-sm text-slate-500">Partner information will be added soon.</p>
+          ) : (
+            <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              {partners.map((partner, index) => (
+                <article className="rounded-2xl border border-sky-100 bg-white px-4 py-6 text-center transition hover:-translate-y-1 hover:border-sky-300 hover:shadow-lg hover:shadow-sky-100 sm:px-5" key={partner.id}>
+                  <div className={`mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full font-display text-base font-bold ${partnerStyles[index % partnerStyles.length]}`}>{partner.mark}</div>
+                  <h3 className="mb-1 text-sm font-bold text-slate-900">{partner.name}</h3>
+                  <p className="mb-3 text-xs text-slate-500">{partner.type}</p>
+                  <p className="text-[10px] font-bold tracking-wide text-sky-800">{partner.since}</p>
+                </article>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
