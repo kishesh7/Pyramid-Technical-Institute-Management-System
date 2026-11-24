@@ -150,12 +150,14 @@ model Beneficiary {
 }
 
 model Donor {
-  id          String       @id @default(cuid())
-  name        String
-  email       String?
-  phone       String?
-  address     String?
-  status      RecordStatus @default(ACTIVE)
+  id               String       @id @default(cuid())
+  name             String
+  organizationName String?
+  imageUrl         String?      @db.LongText
+  email            String?
+  phone            String?
+  address          String?
+  status           RecordStatus @default(ACTIVE)
 
   donations   Donation[]
 

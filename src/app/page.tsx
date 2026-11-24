@@ -246,6 +246,13 @@ type ApiPartner = {
   since: string;
 };
 
+type PublicDonor = {
+  id: string;
+  name: string;
+  organizationName: string | null;
+  imageUrl: string | null;
+};
+
 export default function HomePage() {
   
   const [activeTab, setActiveTab] = useState<TrainingTab>("upcoming");
@@ -259,6 +266,9 @@ export default function HomePage() {
   const [partners, setPartners] = useState<ApiPartner[]>([]);
   const [partnersLoading, setPartnersLoading] = useState(true);
   const [partnersError, setPartnersError] = useState("");
+  const [donors, setDonors] = useState<PublicDonor[]>([]);
+  const [donorsLoading, setDonorsLoading] = useState(true);
+  const [donorsError, setDonorsError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   
 
@@ -288,6 +298,28 @@ export default function HomePage() {
   };
 
   loadPrograms();
+}, []);
+
+useEffect(() => {
+  const loadDonors = async () => {
+    try {
+      const response = await fetch("/api/public/donors", { cache: "no-store" });
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Unable to load donors.");
+      }
+
+      setDonors(result.donors);
+    } catch (error) {
+      console.error("Donor loading error:", error);
+      setDonorsError("Unable to load our donors. Please refresh the page.");
+    } finally {
+      setDonorsLoading(false);
+    }
+  };
+
+  void loadDonors();
 }, []);
 
   useEffect(() => {
@@ -797,6 +829,53 @@ export default function HomePage() {
               <GalleryCard item={item} index={index} key={item.title} />
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="scroll-mt-28 bg-white px-5 py-16 sm:px-8 sm:py-20 lg:px-12" id="donors">
+        <div className="mx-auto max-w-7xl">
+          <SectionHeading
+            eyebrow="Our Donors"
+            title="Thank You to Our Supporters"
+            description="We are grateful to the organizations and individuals who support our work and strengthen our community."
+          />
+          {donorsLoading ? (
+            <p className="mt-10 text-center text-sm text-slate-500">Loading donors...</p>
+          ) : donorsError ? (
+            <p className="mt-10 text-center text-sm text-rose-700">{donorsError}</p>
+          ) : donors.length === 0 ? (
+            <p className="mt-10 text-center text-sm text-slate-500">Donor information will be added soon.</p>
+          ) : (
+            <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {donors.map((donor) => (
+                <article
+                  key={donor.id}
+                  className="overflow-hidden rounded-2xl border border-sky-100 bg-slate-50 text-center shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+                >
+                  <div className="flex h-48 items-center justify-center bg-sky-50">
+                    {donor.imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={donor.imageUrl}
+                        alt={`${donor.organizationName || donor.name} donor`}
+                        className="h-full w-full object-contain"
+                      />
+                    ) : (
+                      <span className="flex h-20 w-20 items-center justify-center rounded-full bg-sky-100 text-3xl font-bold text-sky-700">
+                        {(donor.organizationName || donor.name).slice(0, 1).toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                  <div className="px-5 py-5">
+                    <h3 className="font-display text-lg font-bold text-slate-900">
+                      {donor.organizationName || "Community Supporter"}
+                    </h3>
+                    <p className="mt-1 text-sm text-slate-600">{donor.name}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
