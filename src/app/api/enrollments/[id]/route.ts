@@ -230,3 +230,46 @@ export async function PATCH(
     );
   }
 }
+
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const admin = await requireAdmin();
+
+    if (!admin) {
+      return NextResponse.json(
+        { success: false, message: "Unauthorized. Please sign in." },
+        { status: 401 }
+      );
+    }
+
+    const { id } = await params;
+    const existing = await prisma.enrollmentApplication.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+
+    if (!existing) {
+      return NextResponse.json(
+        { success: false, message: "Application not found." },
+        { status: 404 }
+      );
+    }
+
+    await prisma.enrollmentApplication.delete({ where: { id } });
+
+    return NextResponse.json({
+      success: true,
+      message: "Application deleted successfully.",
+    });
+  } catch (error) {
+    console.error("DELETE enrollment error:", error);
+
+    return NextResponse.json(
+      { success: false, message: "Unable to delete application." },
+      { status: 500 }
+    );
+  }
+}

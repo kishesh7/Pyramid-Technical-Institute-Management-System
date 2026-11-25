@@ -1,6 +1,11 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { FormEvent, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  dashboardQueryKeys,
+  fetchDashboardData,
+} from "@/lib/dashboard-data";
 
 type Partner = {
   id: string;
@@ -21,37 +26,23 @@ const partnerStyles = [
 ];
 
 export default function PartnersPage() {
-  const [partners, setPartners] = useState<Partner[]>([]);
+  const queryClient = useQueryClient();
+  const partnersQuery = useQuery({
+    queryKey: dashboardQueryKeys.partners,
+    queryFn: () =>
+      fetchDashboardData<{ partners: Partner[] }>("/api/partners"),
+  });
+  const partners = partnersQuery.data?.partners ?? [];
   const [form, setForm] = useState(initialForm);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
-
-  const loadPartners = useCallback(async () => {
-    setLoading(true);
-    setError("");
-
-    try {
-      const response = await fetch("/api/partners", { cache: "no-store" });
-      const result = await response.json();
-
-      if (!response.ok || !result.success) {
-        throw new Error(result.message || "Unable to load partners.");
-      }
-
-      setPartners(result.partners);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to load partners.");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void loadPartners();
-  }, [loadPartners]);
+  const displayError =
+    error ||
+    (partnersQuery.isError
+      ? partnersQuery.error.message
+      : "");
 
   async function addPartner(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -73,7 +64,9 @@ export default function PartnersPage() {
 
       setForm(initialForm);
       setNotice(`${result.partner.name} was added successfully.`);
-      await loadPartners();
+      await queryClient.invalidateQueries({
+        queryKey: dashboardQueryKeys.partners,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to add partner.");
     } finally {
@@ -100,7 +93,21 @@ export default function PartnersPage() {
         throw new Error(result.message || "Unable to delete partner.");
       }
 
-      setPartners((current) => current.filter((item) => item.id !== partner.id));
+      queryClient.setQueryData<{ partners: Partner[] }>(
+        dashboardQueryKeys.partners,
+        (current) =>
+          current
+            ? {
+                ...current,
+                partners: current.partners.filter(
+                  (item) => item.id !== partner.id,
+                ),
+              }
+            : current,
+      );
+      await queryClient.invalidateQueries({
+        queryKey: dashboardQueryKeys.partners,
+      });
       setNotice(`${partner.name} was deleted.`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to delete partner.");
@@ -178,9 +185,9 @@ export default function PartnersPage() {
             </button>
           </div>
         </form>
-        {error && (
+        {displayError && (
           <p role="alert" className="mt-4 rounded-lg bg-rose-50 p-3 text-sm text-rose-700">
-            {error}
+            {displayError}
           </p>
         )}
         {notice && (
@@ -194,7 +201,7 @@ export default function PartnersPage() {
         <h2 className="mb-4 text-lg font-semibold text-slate-900">
           Existing partners
         </h2>
-        {loading ? (
+        {partnersQuery.isPending ? (
           <p className="text-sm text-slate-500">Loading partners...</p>
         ) : partners.length === 0 ? (
           <p className="text-sm text-slate-500">No partners have been added.</p>

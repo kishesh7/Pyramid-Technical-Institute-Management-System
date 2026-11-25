@@ -1,6 +1,11 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  dashboardQueryKeys,
+  fetchDashboardData,
+} from "@/lib/dashboard-data";
 
 type Donor = {
   id: string;
@@ -11,39 +16,25 @@ type Donor = {
 const initialForm = { organizationName: "", donorName: "" };
 
 export default function DonorsPage() {
-  const [donors, setDonors] = useState<Donor[]>([]);
+  const queryClient = useQueryClient();
+  const donorsQuery = useQuery({
+    queryKey: dashboardQueryKeys.donors,
+    queryFn: () =>
+      fetchDashboardData<{ donors: Donor[] }>("/api/donors"),
+  });
+  const donors = donorsQuery.data?.donors ?? [];
   const [form, setForm] = useState(initialForm);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState("");
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
-
-  const loadDonors = useCallback(async () => {
-    setLoading(true);
-    setError("");
-
-    try {
-      const response = await fetch("/api/donors", { cache: "no-store" });
-      const result = await response.json();
-
-      if (!response.ok || !result.success) {
-        throw new Error(result.message || "Unable to load donors.");
-      }
-
-      setDonors(result.donors);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to load donors.");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void loadDonors();
-  }, [loadDonors]);
+  const displayError =
+    error ||
+    (donorsQuery.isError
+      ? donorsQuery.error.message
+      : "");
 
   useEffect(() => {
     if (!imageFile) {
@@ -81,7 +72,10 @@ export default function DonorsPage() {
       setForm(initialForm);
       setImageFile(null);
       setNotice(`${result.donor.name} was added successfully.`);
-      await loadDonors();
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: dashboardQueryKeys.donors }),
+        queryClient.invalidateQueries({ queryKey: dashboardQueryKeys.summary }),
+      ]);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to add donor.");
     } finally {
@@ -112,7 +106,20 @@ export default function DonorsPage() {
         throw new Error(result.message || "Unable to remove donor.");
       }
 
-      setDonors((current) => current.filter((item) => item.id !== donor.id));
+      queryClient.setQueryData<{ donors: Donor[] }>(
+        dashboardQueryKeys.donors,
+        (current) =>
+          current
+            ? {
+                ...current,
+                donors: current.donors.filter((item) => item.id !== donor.id),
+              }
+            : current,
+      );
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: dashboardQueryKeys.donors }),
+        queryClient.invalidateQueries({ queryKey: dashboardQueryKeys.summary }),
+      ]);
       setNotice(`${donor.name} was removed from the public donor list.`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to remove donor.");
@@ -205,9 +212,9 @@ export default function DonorsPage() {
             </button>
           </div>
         </form>
-        {error && (
+        {displayError && (
           <p role="alert" className="mt-4 rounded-lg bg-rose-50 p-3 text-sm text-rose-700">
-            {error}
+            {displayError}
           </p>
         )}
         {notice && (
@@ -221,7 +228,7 @@ export default function DonorsPage() {
         <h2 className="mb-4 text-lg font-semibold text-slate-900">
           Existing donors
         </h2>
-        {loading ? (
+        {donorsQuery.isPending ? (
           <p className="text-sm text-slate-500">Loading donors...</p>
         ) : donors.length === 0 ? (
           <p className="text-sm text-slate-500">No active donors have been added.</p>

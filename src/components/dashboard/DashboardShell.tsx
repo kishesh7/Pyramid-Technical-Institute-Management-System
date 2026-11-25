@@ -4,8 +4,14 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQuery,
+} from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import pyramidLogo from "@/assets/images/pyramidlogo.jpeg";
+import { dashboardQueryKeys, fetchDashboardData } from "@/lib/dashboard-data";
 
 const navigation = [
   { label: "Dashboard", href: "/dashboard", icon: "⌂" },
@@ -15,15 +21,42 @@ const navigation = [
   { label: "Beneficiaries", href: "/dashboard/beneficiaries", icon: "♡" },
   { label: "Donors", href: "/dashboard/donors", icon: "♧" },
   { label: "Programs", href: "/dashboard/programs", icon: "◈" },
+  { label: "Gallery", href: "/dashboard/gallery", icon: "▧" },
   { label: "Reports", href: "/dashboard/reports", icon: "▥" },
   { label: "Change password", href: "/dashboard/settings/password", icon: "⚿" },
 ];
 
-type EnrollmentSummary = {
-  pending: number;
+type EnrollmentNotifications = {
+  summary: {
+    pending: number;
+  };
 };
 
 export default function DashboardShell({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 30_000,
+            gcTime: 5 * 60_000,
+            refetchOnWindowFocus: true,
+            retry: 1,
+          },
+        },
+      }),
+  );
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <DashboardShellContent>{children}</DashboardShellContent>
+    </QueryClientProvider>
+  );
+}
+
+function DashboardShellContent({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const pathname = usePathname();
@@ -31,42 +64,28 @@ export default function DashboardShell({
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
-  const [pendingEnrollments, setPendingEnrollments] = useState(0);
+  const notificationsQuery = useQuery({
+    queryKey: dashboardQueryKeys.notifications,
+    queryFn: () =>
+      fetchDashboardData<EnrollmentNotifications>(
+        "/api/enrollments?status=PENDING&page=1&view=dashboard",
+      ),
+    staleTime: 10_000,
+    refetchInterval: 15_000,
+    refetchIntervalInBackground: false,
+  });
+  const pendingEnrollments = Number(
+    notificationsQuery.data?.summary.pending ?? 0,
+  );
 
-  // Fetch pending enrollment count from the existing admin API.
-  const loadEnrollmentNotifications = useCallback(async () => {
-    try {
-      const response = await fetch(
-        "/api/enrollments?status=PENDING&page=1",
-        {
-          method: "GET",
-          cache: "no-store",
-        }
-      );
-
-      if (!response.ok) return;
-
-      const data = await response.json();
-
-      if (data.success && data.summary) {
-        const summary = data.summary as EnrollmentSummary;
-        setPendingEnrollments(Number(summary.pending) || 0);
-      }
-    } catch (error) {
-      console.error("Unable to load enrollment notifications:", error);
-    }
-  }, []);
-
-  // Initial fetch and automatic refresh every 15 seconds.
   useEffect(() => {
-    loadEnrollmentNotifications();
-
-    const interval = window.setInterval(() => {
-      loadEnrollmentNotifications();
-    }, 15000);
-
-    return () => window.clearInterval(interval);
-  }, [loadEnrollmentNotifications]);
+    if (notificationsQuery.isError) {
+      console.error(
+        "Unable to load enrollment notifications:",
+        notificationsQuery.error,
+      );
+    }
+  }, [notificationsQuery.error, notificationsQuery.isError]);
 
   async function logout() {
     setLoggingOut(true);
@@ -198,7 +217,9 @@ export default function DashboardShell({
           </div>
         </header>
 
-        <main className="p-4 sm:p-6">{children}</main>
+        <main className="p-4 sm:p-6">
+          {children}
+        </main>
       </div>
     </div>
   );

@@ -1,10 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
-import pyramid1 from "@/assets/images/pyramid1.png";
-import pyramid3 from "@/assets/images/pyramid3.png";
-import pyramidLogo from "@/assets/images/pyramidlogo.jpeg";
-import samirKhadka from "@/assets/images/samrikhadka.jpeg";
 import {
   AnimatedNumber,
   BrandMark,
@@ -67,14 +63,6 @@ const impactStats = [
   { icon: "🤝", target: 14, suffix: "", label: "National & international partner organizations", accent: "from-teal-500 to-emerald-500" },
   { icon: "🌱", target: 320, suffix: "+", label: "Small businesses started by graduates", accent: "from-sky-700 to-violet-500" },
   { icon: "🏆", target: 15, suffix: "", label: "Awards & recognitions from national bodies", accent: "from-orange-500 to-rose-500" },
-];
-
-const galleryItems = [
-  { src: samirKhadka.src, title: "DIRECTOR", subtitle: "Samir Kumar & Khadka" },
-  { src: pyramid1.src, title: "Graduation 2081", subtitle: "Certificate distribution ceremony" },
-  { src: pyramid3.src, title: "Community Outreach", subtitle: "Field visits for needs assessment" },
-  { src: "/images/tailoring.jpeg", title: "Women Empowerment", subtitle: "Tailoring batch — Itahari & Dharan" },
-  { src: pyramidLogo.src, title: "Partner NGO Visit", subtitle: "GIZ Nepal visiting our facility" },
 ];
 
 const siteLinks = [
@@ -178,6 +166,9 @@ export default function HomePage() {
   const [donors, setDonors] = useState<PublicDonor[]>([]);
   const [donorsLoading, setDonorsLoading] = useState(true);
   const [donorsError, setDonorsError] = useState("");
+  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
+  const [galleryLoading, setGalleryLoading] = useState(true);
+  const [galleryError, setGalleryError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   
 
@@ -220,6 +211,46 @@ export default function HomePage() {
     return () => {
       active = false;
       window.clearInterval(interval);
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadGallery = async () => {
+      try {
+        const response = await fetch("/api/gallery", { cache: "no-store" });
+        const result = await response.json();
+
+        if (!response.ok || !result.success || !Array.isArray(result.images)) {
+          throw new Error(result.message || "Unable to load gallery.");
+        }
+
+        if (active) {
+          setGalleryItems(
+            result.images.map(
+              (image: { imageUrl: string; title: string; subtitle: string }) => ({
+                src: image.imageUrl,
+                title: image.title,
+                subtitle: image.subtitle,
+              }),
+            ),
+          );
+          setGalleryError("");
+        }
+      } catch (error) {
+        console.error("Gallery loading error:", error);
+        if (active) {
+          setGalleryError("Unable to load gallery photos. Please try again later.");
+        }
+      } finally {
+        if (active) setGalleryLoading(false);
+      }
+    };
+
+    void loadGallery();
+    return () => {
+      active = false;
     };
   }, []);
 
@@ -770,11 +801,19 @@ useEffect(() => {
       <section className="scroll-mt-28 px-5 py-16 sm:px-8 sm:py-20 lg:px-12" id="gallery">
         <div className="mx-auto max-w-7xl">
           <SectionHeading eyebrow="Gallery" title="Life at PTI" description="Snapshots from our training sessions, graduation ceremonies, and community events." />
-          <div className="mt-9 grid auto-rows-47.5 grid-cols-2 gap-3 sm:auto-rows-55 sm:gap-4 lg:grid-cols-3">
-            {galleryItems.map((item, index) => (
-              <GalleryCard item={item} index={index} key={item.title} />
-            ))}
-          </div>
+          {galleryLoading ? (
+            <p className="mt-9 text-sm text-slate-500">Loading gallery...</p>
+          ) : galleryError ? (
+            <p className="mt-9 text-sm text-red-600" role="status">{galleryError}</p>
+          ) : galleryItems.length === 0 ? (
+            <p className="mt-9 text-sm text-slate-500">Gallery photos will be added soon.</p>
+          ) : (
+            <div className="mt-9 grid auto-rows-47.5 grid-cols-2 gap-3 sm:auto-rows-55 sm:gap-4 lg:grid-cols-3">
+              {galleryItems.map((item, index) => (
+                <GalleryCard item={item} index={index} key={`${item.title}-${index}`} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

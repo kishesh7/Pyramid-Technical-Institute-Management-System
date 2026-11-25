@@ -1,7 +1,12 @@
 
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  dashboardQueryKeys,
+  fetchDashboardData,
+} from "@/lib/dashboard-data";
 
 type Member = {
   id: string;
@@ -33,50 +38,44 @@ const emptyForm: MemberForm = {
 };
 
 export default function MembersPage() {
-  const [members, setMembers] = useState<Member[]>([]);
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [status, setStatus] = useState("ALL");
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<MemberForm>(emptyForm);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
-  const loadMembers = useCallback(async () => {
-    setLoading(true);
-    setError("");
-
-    try {
-      const params = new URLSearchParams({
-        search,
-        status,
-      });
-
-      const response = await fetch(`/api/members?${params.toString()}`);
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Unable to load members.");
-      }
-
-      setMembers(data.members);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Unable to load members."
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [search, status]);
-
   useEffect(() => {
     const timer = setTimeout(() => {
-      void loadMembers();
+      setDebouncedSearch(search);
     }, 250);
 
     return () => clearTimeout(timer);
-  }, [loadMembers]);
+  }, [search]);
+
+  const membersQuery = useQuery({
+    queryKey: dashboardQueryKeys.members(debouncedSearch, status),
+    queryFn: () => {
+      const params = new URLSearchParams({
+        search: debouncedSearch,
+        status,
+      });
+
+      return fetchDashboardData<{ members: Member[] }>(
+        `/api/members?${params.toString()}`,
+      );
+    },
+  });
+  const members = membersQuery.data?.members ?? [];
+  const loading = membersQuery.isPending;
+  const displayError =
+    error ||
+    (membersQuery.isError
+      ? membersQuery.error.message
+      : "");
 
   const handleCreateMember = async (
     event: React.FormEvent<HTMLFormElement>
@@ -104,7 +103,14 @@ export default function MembersPage() {
       setMessage("Member registered successfully.");
       setForm(emptyForm);
       setShowForm(false);
-      await loadMembers();
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: dashboardQueryKeys.membersRoot,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: dashboardQueryKeys.summary,
+        }),
+      ]);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Unable to create member."
@@ -162,12 +168,12 @@ export default function MembersPage() {
         </div>
       )}
 
-      {error && (
+      {displayError && (
         <div
           role="alert"
           className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"
         >
-          {error}
+          {displayError}
         </div>
       )}
 
@@ -245,7 +251,7 @@ export default function MembersPage() {
 
           <button
             type="button"
-            onClick={() => void loadMembers()}
+            onClick={() => void membersQuery.refetch()}
             className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50"
           >
             Refresh

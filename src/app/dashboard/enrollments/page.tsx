@@ -1,7 +1,12 @@
 
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  dashboardQueryKeys,
+  fetchDashboardData,
+} from "@/lib/dashboard-data";
 
 type EnrollmentStatus = "PENDING" | "CONTACTED" | "APPROVED" | "REJECTED";
 
@@ -59,58 +64,54 @@ const emptySummary: Summary = {
 };
 
 export default function EnrollmentsPage() {
-  const [applications, setApplications] = useState<Application[]>([]);
-  const [summary, setSummary] = useState<Summary>(emptySummary);
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [status, setStatus] = useState<(typeof filters)[number]>("ALL");
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selected, setSelected] = useState<Application | null>(null);
   const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
   const [notice, setNotice] = useState("");
+  const [deleteNotice, setDeleteNotice] = useState("");
   const [documentLoadingId, setDocumentLoadingId] = useState<string | null>(null);
   const [documentError, setDocumentError] = useState("");
 
-  const loadApplications = useCallback(async () => {
-    setLoading(true);
-    setError("");
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
 
-    try {
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  const applicationsQuery = useQuery({
+    queryKey: dashboardQueryKeys.enrollments(debouncedSearch, status, page),
+    queryFn: () => {
       const params = new URLSearchParams({
-        search,
+        search: debouncedSearch,
         status,
         page: String(page),
       });
 
-      const response = await fetch(`/api/enrollments?${params.toString()}`);
-      const result = await response.json();
-
-      if (!response.ok || !result.success) {
-        throw new Error(result.message || "Unable to load applications.");
-      }
-
-      setApplications(result.applications);
-      setSummary(result.summary);
-      setTotalPages(result.pagination.totalPages || 1);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Something went wrong."
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [search, status, page]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      void loadApplications();
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [loadApplications]);
+      return fetchDashboardData<{
+        applications: Application[];
+        summary: Summary;
+        pagination: { totalPages: number };
+      }>(`/api/enrollments?${params.toString()}`);
+    },
+  });
+  const applications = applicationsQuery.data?.applications ?? [];
+  const summary = applicationsQuery.data?.summary ?? emptySummary;
+  const totalPages = applicationsQuery.data?.pagination.totalPages || 1;
+  const loading = applicationsQuery.isPending;
+  const displayError =
+    error ||
+    (applicationsQuery.isError
+      ? applicationsQuery.error.message
+      : "");
 
   async function openApplication(application: Application) {
     setSelected({
@@ -198,13 +199,65 @@ export default function EnrollmentsPage() {
       setNotes(result.application.adminNotes ?? "");
       setNotice("Application updated successfully.");
 
-      await loadApplications();
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: dashboardQueryKeys.enrollmentsRoot,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: dashboardQueryKeys.notifications,
+        }),
+      ]);
     } catch (err) {
       setNotice(
         err instanceof Error ? err.message : "Unable to update application."
       );
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function deleteApplication(application: Application) {
+    if (
+      !window.confirm(
+        `Permanently delete the application from ${application.fullName}? This cannot be undone.`
+      )
+    ) {
+      return;
+    }
+
+    setDeletingId(application.id);
+    setError("");
+    setDeleteNotice("");
+
+    try {
+      const response = await fetch(
+        `/api/enrollments/${encodeURIComponent(application.id)}`,
+        { method: "DELETE" }
+      );
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || "Unable to delete application.");
+      }
+
+      if (selected?.id === application.id) {
+        setSelected(null);
+      }
+      setDeleteNotice(`Application from ${application.fullName} was deleted.`);
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: dashboardQueryKeys.enrollmentsRoot,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: dashboardQueryKeys.notifications,
+        }),
+      ]);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Unable to delete application."
+      );
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -259,6 +312,7 @@ export default function EnrollmentsPage() {
             onChange={(event) => {
               setSearch(event.target.value);
               setPage(1);
+              setError("");
             }}
             placeholder="Search name, phone, email, program..."
             className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-sky-600 focus:ring-2 focus:ring-sky-100 sm:max-w-sm"
@@ -273,6 +327,7 @@ export default function EnrollmentsPage() {
               onClick={() => {
                 setStatus(filter);
                 setPage(1);
+                setError("");
               }}
               className={`whitespace-nowrap rounded-lg px-3 py-2 text-xs font-semibold transition ${
                 status === filter
@@ -287,9 +342,14 @@ export default function EnrollmentsPage() {
           ))}
         </div>
 
-        {error && (
-          <div className="m-4 rounded-lg bg-rose-50 p-3 text-sm text-rose-700">
-            {error}
+        {displayError && (
+          <div role="alert" className="m-4 rounded-lg bg-rose-50 p-3 text-sm text-rose-700">
+            {displayError}
+          </div>
+        )}
+        {deleteNotice && (
+          <div role="status" className="mx-4 mt-4 rounded-lg bg-emerald-50 p-3 text-sm text-emerald-700">
+            {deleteNotice}
           </div>
         )}
 
@@ -346,6 +406,7 @@ export default function EnrollmentsPage() {
                       </span>
                     </td>
                     <td className="px-5 py-4">
+                      <div className="flex items-center gap-3">
                       <button
                         type="button"
                         onClick={() => openApplication(application)}
@@ -353,6 +414,15 @@ export default function EnrollmentsPage() {
                       >
                         View details
                       </button>
+                      <button
+                        type="button"
+                        disabled={deletingId !== null || saving}
+                        onClick={() => void deleteApplication(application)}
+                        className="font-semibold text-rose-700 hover:text-rose-900 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {deletingId === application.id ? "Deleting..." : "Delete"}
+                      </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -547,6 +617,14 @@ export default function EnrollmentsPage() {
               </div>
 
               <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  disabled={saving || deletingId !== null}
+                  onClick={() => void deleteApplication(selected)}
+                  className="rounded-lg border border-rose-200 bg-white px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50 disabled:opacity-50"
+                >
+                  {deletingId === selected.id ? "Deleting..." : "Delete application"}
+                </button>
                 <button
                   type="button"
                   disabled={saving}

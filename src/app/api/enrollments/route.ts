@@ -96,6 +96,39 @@ export async function GET(request: NextRequest) {
         : {}),
     };
 
+    if (searchParams.get("view") === "dashboard") {
+      const [applications, pending] = await Promise.all([
+        prisma.enrollmentApplication.findMany({
+          where,
+          select: {
+            id: true,
+            fullName: true,
+            phone: true,
+            email: true,
+            status: true,
+            createdAt: true,
+            program: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+          orderBy: { createdAt: "desc" },
+          take: 5,
+        }),
+        prisma.enrollmentApplication.count({
+          where: { status: "PENDING" },
+        }),
+      ]);
+
+      return NextResponse.json({
+        success: true,
+        applications,
+        summary: { pending },
+      });
+    }
+
     const [applications, total, counts] = await Promise.all([
       prisma.enrollmentApplication.findMany({
         where,

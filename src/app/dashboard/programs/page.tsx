@@ -1,6 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  dashboardQueryKeys,
+  fetchDashboardData,
+} from "@/lib/dashboard-data";
 
 type TrainingStatus = "UPCOMING" | "ONGOING" | "COMPLETED";
 type ProgramTab = Lowercase<TrainingStatus>;
@@ -64,54 +69,45 @@ function isTrainingStatus(value: string): value is TrainingStatus {
 }
 
 export default function ProgramsPage() {
-  const [programs, setPrograms] = useState<Program[]>([]);
-  const [projects, setProjects] = useState<ProjectOption[]>([]);
+  const queryClient = useQueryClient();
+  const programsQuery = useQuery({
+    queryKey: dashboardQueryKeys.programs,
+    queryFn: async () => {
+      const result = await fetchDashboardData<{
+        programs: Program[];
+        projects: ProjectOption[];
+      }>("/api/programs");
+
+      if (!Array.isArray(result.programs) || !Array.isArray(result.projects)) {
+        throw new Error("Unable to load programs.");
+      }
+
+      return result;
+    },
+  });
+  const programs = programsQuery.data?.programs ?? [];
+  const projects = programsQuery.data?.projects ?? [];
   const [activeTab, setActiveTab] = useState<ProgramTab>("upcoming");
   const [form, setForm] = useState<ProgramForm>(initialForm);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
 
-  const loadPrograms = useCallback(async () => {
-    setLoading(true);
-    setError("");
-
-    try {
-      const response = await fetch("/api/programs", { cache: "no-store" });
-      const result = await response.json();
-
-      if (
-        !response.ok ||
-        !result.success ||
-        !Array.isArray(result.programs) ||
-        !Array.isArray(result.projects)
-      ) {
-        throw new Error(result.message || "Unable to load programs.");
-      }
-
-      setPrograms(result.programs);
-      setProjects(result.projects);
-      setForm((current) =>
-        current.projectId || !result.projects.length
-          ? current
-          : { ...current, projectId: result.projects[0].id },
-      );
-    } catch (loadError) {
-      setError(
-        loadError instanceof Error
-          ? loadError.message
-          : "Unable to load programs.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
-    void loadPrograms();
-  }, [loadPrograms]);
+    const firstProjectId = programsQuery.data?.projects[0]?.id;
+    if (firstProjectId) {
+      setForm((current) =>
+        current.projectId ? current : { ...current, projectId: firstProjectId },
+      );
+    }
+  }, [programsQuery.data]);
+
+  const displayError =
+    error ||
+    (programsQuery.isError
+      ? programsQuery.error.message
+      : "");
 
   function resetForm() {
     setEditingId(null);
@@ -170,7 +166,14 @@ export default function ProgramsPage() {
         ...initialForm,
         projectId: projects[0]?.id ?? "",
       });
-      await loadPrograms();
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: dashboardQueryKeys.programs,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: dashboardQueryKeys.summary,
+        }),
+      ]);
     } catch (saveError) {
       setError(
         saveError instanceof Error
@@ -331,12 +334,12 @@ export default function ProgramsPage() {
           </div>
         </form>
 
-        {error && (
+        {displayError && (
           <p
             className="mt-4 rounded-lg bg-rose-50 p-3 text-sm text-rose-700"
             role="alert"
           >
-            {error}
+            {displayError}
           </p>
         )}
         {notice && (
@@ -384,7 +387,7 @@ export default function ProgramsPage() {
           </div>
         </div>
 
-        {loading ? (
+        {programsQuery.isPending ? (
           <p className="mt-5 text-sm text-slate-500">Loading programs...</p>
         ) : visiblePrograms.length === 0 ? (
           <p className="mt-5 rounded-xl border border-dashed border-sky-200 bg-white p-6 text-center text-sm text-slate-500">

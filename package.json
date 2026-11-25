@@ -13,6 +13,7 @@
   "dependencies": {
     "@prisma/adapter-mariadb": "^7.10.1",
     "@prisma/client": "^7.10.1",
+    "@tanstack/react-query": "^5.108.4",
     "bcryptjs": "^3.0.3",
     "dotenv": "^18.0.10",
     "jose": "^6.2.17",

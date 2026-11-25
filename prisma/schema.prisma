@@ -249,6 +249,18 @@ model Partner {
   @@index([displayOrder])
 }
 
+model GalleryImage {
+  id           String   @id @default(cuid())
+  title        String
+  subtitle     String
+  imageUrl     String   @db.LongText
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([displayOrder])
+}
+
 model TrainingApplication {
   id                Int      @id @default(autoincrement())
   applicationNumber String   @unique @db.VarChar(30)

@@ -2,31 +2,35 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import {
+  dashboardQueryKeys,
+  fetchDashboardData,
+} from "@/lib/dashboard-data";
 
 const stats = [
   {
+    key: "members",
     title: "Total Members",
-    value: "0",
-    description: "Registered members",
+    description: "Active registered members",
     icon: "♙",
   },
   {
+    key: "beneficiaries",
     title: "Beneficiaries",
-    value: "0",
     description: "People receiving support",
     icon: "♡",
   },
   {
+    key: "donors",
     title: "Total Donors",
-    value: "0",
-    description: "Registered donors",
+    description: "Active donor records",
     icon: "♧",
   },
   {
-    title: "Active Programs",
-    value: "0",
-    description: "Currently running programs",
+    key: "ongoingPrograms",
+    title: "Ongoing Programs",
+    description: "Currently running training programs",
     icon: "▤",
   },
 ];
@@ -36,6 +40,22 @@ const activities = [
   "Connect your organization modules to start managing records.",
   "Recent donations and program activities will appear here.",
 ];
+
+type DashboardSummary = {
+  members: number;
+  beneficiaries: number;
+  donors: number;
+  programs: {
+    upcoming: number;
+    ongoing: number;
+    completed: number;
+  };
+  donations: {
+    currency: string;
+    total: string;
+    count: number;
+  }[];
+};
 
 type Enrollment = {
   id: string;
@@ -51,53 +71,50 @@ type Enrollment = {
 };
 
 export default function DashboardPage() {
-  const [applications, setApplications] = useState<Enrollment[]>([]);
-  const [pendingCount, setPendingCount] = useState(0);
-  const [loadingEnrollments, setLoadingEnrollments] = useState(true);
-  const [enrollmentError, setEnrollmentError] = useState("");
+  const summaryQuery = useQuery({
+    queryKey: dashboardQueryKeys.summary,
+    queryFn: () =>
+      fetchDashboardData<{ summary: DashboardSummary }>(
+        "/api/dashboard/summary",
+      ),
+    refetchInterval: 60_000,
+  });
+  const notificationsQuery = useQuery({
+    queryKey: dashboardQueryKeys.notifications,
+    queryFn: () =>
+      fetchDashboardData<{
+        applications: Enrollment[];
+        summary: { pending: number };
+      }>("/api/enrollments?status=PENDING&page=1&view=dashboard"),
+    staleTime: 10_000,
+  });
+  const summary = summaryQuery.data?.summary ?? null;
+  const applications = notificationsQuery.data?.applications ?? [];
+  const pendingCount = Number(notificationsQuery.data?.summary.pending ?? 0);
+  const summaryLoading = summaryQuery.isPending;
+  const summaryError =
+    summaryQuery.isError && !summary
+      ? "Could not load live organization statistics."
+      : "";
+  const loadingEnrollments = notificationsQuery.isPending;
+  const enrollmentError =
+    notificationsQuery.isError && !notificationsQuery.data
+      ? "Could not load new enrollment applications."
+      : "";
 
-  const loadEnrollmentNotifications = useCallback(async () => {
-    try {
-      const response = await fetch(
-        "/api/enrollments?status=PENDING&page=1",
-        {
-          method: "GET",
-          cache: "no-store",
-        }
-      );
+  const statValues: Record<string, number | undefined> = {
+    members: summary?.members,
+    beneficiaries: summary?.beneficiaries,
+    donors: summary?.donors,
+    ongoingPrograms: summary?.programs.ongoing,
+  };
 
-      if (!response.ok) {
-        throw new Error("Unable to load enrollment notifications.");
-      }
-
-      const data = await response.json();
-
-      if (!data.success) {
-        throw new Error(
-          data.message || "Unable to load enrollment notifications."
-        );
-      }
-
-      setApplications(data.applications || []);
-      setPendingCount(Number(data.summary?.pending) || 0);
-      setEnrollmentError("");
-    } catch (error) {
-      console.error("Enrollment notification error:", error);
-      setEnrollmentError("Could not load new enrollment applications.");
-    } finally {
-      setLoadingEnrollments(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadEnrollmentNotifications();
-
-    const interval = window.setInterval(() => {
-      loadEnrollmentNotifications();
-    }, 15000);
-
-    return () => window.clearInterval(interval);
-  }, [loadEnrollmentNotifications]);
+  const programBreakdown = [
+    { key: "upcoming", label: "Upcoming", value: summary?.programs.upcoming ?? 0, style: "bg-emerald-500" },
+    { key: "ongoing", label: "Ongoing", value: summary?.programs.ongoing ?? 0, style: "bg-orange-500" },
+    { key: "completed", label: "Completed", value: summary?.programs.completed ?? 0, style: "bg-sky-600" },
+  ];
+  const maxProgramCount = Math.max(1, ...programBreakdown.map((item) => item.value));
 
   return (
     <div className="mx-auto max-w-7xl space-y-8">
@@ -134,7 +151,11 @@ export default function DashboardPage() {
             </div>
 
             <p className="mt-4 text-3xl font-bold text-slate-900">
-              {stat.value}
+              {summaryLoading
+                ? "…"
+                : summaryError
+                  ? "—"
+                  : (statValues[stat.key] ?? 0).toLocaleString()}
             </p>
             <p className="mt-2 text-xs text-slate-400">
               {stat.description}
@@ -183,7 +204,7 @@ export default function DashboardPage() {
               <p className="text-sm text-red-600">{enrollmentError}</p>
               <button
                 type="button"
-                onClick={loadEnrollmentNotifications}
+                onClick={() => void notificationsQuery.refetch()}
                 className="mt-3 text-sm font-semibold text-sky-700 hover:underline"
               >
                 Try again
@@ -273,16 +294,87 @@ export default function DashboardPage() {
             </span>
           </div>
 
-          <div className="mt-8 flex min-h-52 flex-col items-center justify-center rounded-2xl border border-dashed border-sky-200 bg-[linear-gradient(135deg,#f8fbff,#eff8ff)] p-6 text-center">
-            <span className="text-4xl">📊</span>
-            <h3 className="mt-3 font-semibold text-slate-700">
-              Your analytics will appear here
-            </h3>
-            <p className="mt-2 max-w-sm text-sm text-slate-500">
-              Once you add members, donations and programs, this area can
-              display your organization&apos;s live statistics.
-            </p>
-          </div>
+          {summaryError ? (
+            <div className="mt-6 rounded-xl border border-rose-100 bg-rose-50 p-5">
+              <p className="text-sm text-rose-700" role="alert">{summaryError}</p>
+              <button
+                className="mt-3 text-sm font-semibold text-rose-800 hover:underline"
+                onClick={() => void summaryQuery.refetch()}
+                type="button"
+              >
+                Try again
+              </button>
+            </div>
+          ) : summaryLoading ? (
+            <div className="mt-6 rounded-xl border border-sky-100 bg-sky-50/60 p-8 text-center text-sm text-slate-500">
+              Loading organization statistics...
+            </div>
+          ) : (
+            <div className="mt-6 grid gap-5 lg:grid-cols-2">
+              <section className="rounded-xl border border-sky-100 bg-sky-50/50 p-5">
+                <h3 className="font-semibold text-slate-800">
+                  Training programs by status
+                </h3>
+                <div className="mt-5 space-y-4">
+                  {programBreakdown.map((item) => (
+                    <div key={item.key}>
+                      <div className="mb-1.5 flex items-center justify-between text-sm">
+                        <span className="text-slate-600">{item.label}</span>
+                        <span className="font-semibold text-slate-800">
+                          {item.value.toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="h-2 overflow-hidden rounded-full bg-white">
+                        <div
+                          className={`h-full rounded-full ${item.style}`}
+                          style={{
+                            width: `${(item.value / maxProgramCount) * 100}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <section className="rounded-xl border border-sky-100 bg-white p-5">
+                <h3 className="font-semibold text-slate-800">
+                  Donations received
+                </h3>
+                {summary?.donations.length ? (
+                  <div className="mt-4 divide-y divide-slate-100">
+                    {summary.donations.map((donation) => (
+                      <div
+                        className="flex items-center justify-between gap-4 py-3"
+                        key={donation.currency}
+                      >
+                        <div>
+                          <p className="text-sm font-semibold text-slate-800">
+                            {donation.currency}{" "}
+                            {Number(donation.total).toLocaleString("en-US", {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
+                          </p>
+                          <p className="mt-1 text-xs text-slate-500">
+                            {donation.count.toLocaleString()}{" "}
+                            {donation.count === 1 ? "donation" : "donations"}
+                          </p>
+                        </div>
+                        <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                          {donation.currency}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="mt-4 text-sm text-slate-500">
+                    No donations have been recorded yet.
+                  </p>
+                )}
+              </section>
+            </div>
+          )}
         </div>
 
         <div className="rounded-2xl border border-sky-100/80 bg-white p-6 shadow-[0_14px_40px_rgba(14,116,144,0.08)]">
