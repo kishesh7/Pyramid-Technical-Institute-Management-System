@@ -14,7 +14,7 @@ const navigation = [
   { label: "Partners", href: "/dashboard/partners", icon: "◎" },
   { label: "Beneficiaries", href: "/dashboard/beneficiaries", icon: "♡" },
   { label: "Donors", href: "/dashboard/donors", icon: "♧" },
-  { label: "Projects", href: "/dashboard/projects", icon: "◈" },
+  { label: "Programs", href: "/dashboard/programs", icon: "◈" },
   { label: "Reports", href: "/dashboard/reports", icon: "▥" },
   { label: "Change password", href: "/dashboard/settings/password", icon: "⚿" },
 ];

@@ -8,6 +8,7 @@ export type TrainingTab = "upcoming" | "ongoing" | "completed";
 export type TrainingCategory = "Technology" | "Healthcare" | "Vocational" | "Business";
 
 export type TrainingProgram = {
+  id: string;
   title: string;
   category: TrainingCategory;
   description: string;

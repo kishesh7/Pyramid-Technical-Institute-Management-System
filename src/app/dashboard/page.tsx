@@ -24,9 +24,9 @@ const stats = [
     icon: "♧",
   },
   {
-    title: "Active Projects",
+    title: "Active Programs",
     value: "0",
-    description: "Currently running projects",
+    description: "Currently running programs",
     icon: "▤",
   },
 ];
@@ -34,7 +34,7 @@ const stats = [
 const activities = [
   "Your Pyramid NGO dashboard is ready.",
   "Connect your organization modules to start managing records.",
-  "Recent donations and project activities will appear here.",
+  "Recent donations and program activities will appear here.",
 ];
 
 type Enrollment = {
@@ -279,7 +279,7 @@ export default function DashboardPage() {
               Your analytics will appear here
             </h3>
             <p className="mt-2 max-w-sm text-sm text-slate-500">
-              Once you add members, donations and projects, this area can
+              Once you add members, donations and programs, this area can
               display your organization&apos;s live statistics.
             </p>
           </div>

@@ -175,10 +175,12 @@ CREATE TABLE `Program` (
     `startDate` DATETIME(3) NULL,
     `endDate` DATETIME(3) NULL,
     `status` ENUM('ACTIVE', 'INACTIVE', 'ARCHIVED') NOT NULL DEFAULT 'ACTIVE',
+    `trainingStatus` ENUM('UPCOMING', 'ONGOING', 'COMPLETED') NOT NULL DEFAULT 'UPCOMING',
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
     INDEX `Program_projectId_idx`(`projectId`),
+    INDEX `Program_trainingStatus_idx`(`trainingStatus`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 

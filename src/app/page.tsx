@@ -43,144 +43,6 @@ const categoryStyles: Record<TrainingCategory, { badge: string; accent: string }
   },
 };
 
-const programs: Record<TrainingTab, TrainingProgram[]> = {
-  upcoming: [
-    {
-      title: "Computer Hardware & Networking (CHN)",
-      category: "Technology",
-      description:
-        "Install, configure, and maintain computer systems and networks. Includes CISCO basics and CompTIA A+ fundamentals.",
-      details: ["Batch Start: Baisakh 15, 2082", "Duration: 3 Months · CTEVT Level 2", "Instructor: Ram Prasad Shrestha"],
-      seats: "18 / 25 seats",
-      footer: "Open for applications",
-    },
-    {
-      title: "Community Health Worker (CHW)",
-      category: "Healthcare",
-      description:
-        "Community-level health delivery covering maternal health, nutrition, and first aid certification.",
-      details: ["Batch Start: Baisakh 20, 2082", "Duration: 6 Months · MoHP Recognized", "Instructor: Dr. Sunita Rai"],
-      seats: "22 / 30 seats",
-      footer: "Open for applications",
-    },
-    {
-      title: "Tailoring & Dress Making",
-      category: "Vocational",
-      description:
-        "Master garment construction, pattern making, and modern tailoring for self-employment and business setup.",
-      details: ["Batch Start: Jestha 1, 2082", "Duration: 4 Months · CTEVT Level 1", "Instructor: Kabita Thapa"],
-      seats: "10 / 20 seats",
-      footer: "Open for applications",
-    },
-    {
-      title: "Digital Literacy & E-Commerce",
-      category: "Business",
-      description:
-        "Internet skills, social media marketing, and online selling for small businesses and entrepreneurs in Sunsari.",
-      details: ["Batch Start: Jestha 10, 2082", "Duration: 45 Days · PTI Certificate", "Instructor: Bikash Adhikari"],
-      seats: "28 / 35 seats",
-      footer: "Open for applications",
-    },
-    {
-      title: "Plumbing & Sanitation Technology",
-      category: "Vocational",
-      description:
-        "Hands-on plumbing: pipe fitting, water supply systems, and sanitation infrastructure for rural and urban settings.",
-      details: ["Batch Start: Ashadh 1, 2082", "Duration: 3 Months · CTEVT Level 2", "Instructor: Raju Karki"],
-      seats: "20 / 25 seats",
-      footer: "Open for applications",
-    },
-    {
-      title: "Mobile Phone Repair & Maintenance",
-      category: "Technology",
-      description:
-        "Diagnose and repair Android and iOS devices including software flashing and hardware replacement.",
-      details: ["Batch Start: Ashadh 15, 2082", "Duration: 2 Months · PTI + CTEVT", "Instructor: Suresh Tamang"],
-      seats: "15 / 20 seats",
-      footer: "Open for applications",
-    },
-  ],
-  ongoing: [
-    {
-      title: "Basic Electrical Wiring & Installation",
-      category: "Technology",
-      description:
-        "Residential and commercial wiring, safety protocols, and Nepal Electricity Authority standards.",
-      details: ["Started: Chaitra 1 · Ends: Baisakh 30, 2082", "Enrolled: 24 Students"],
-      progress: 50,
-      footer: "Week 6 of 12",
-    },
-    {
-      title: "Elderly Care & Home Nursing",
-      category: "Healthcare",
-      description:
-        "Basic nursing care, physiotherapy assistance, and emotional support for elderly patients at home.",
-      details: ["Started: Falgun 15 · Ends: Ashadh 15, 2082", "Enrolled: 18 Students"],
-      progress: 48,
-      footer: "Week 8 of 16",
-    },
-    {
-      title: "Cooperative Management & Accounting",
-      category: "Business",
-      description:
-        "Accounting principles and cooperative financial management for community savings groups.",
-      details: ["Started: Magh 10 · Ends: Baisakh 10, 2082", "Enrolled: 30 Students"],
-      progress: 82,
-      footer: "Week 10 of 12",
-    },
-  ],
-  completed: [
-    {
-      title: "Food Processing & Preservation",
-      category: "Vocational",
-      description:
-        "Practical food preparation, packaging, quality control, and hygiene standards for cottage food industries.",
-      details: ["Batch: Kartik – Poush 2081", "Graduates: 28/30 · Employed: 22"],
-      footer: "93% Graduation Rate",
-    },
-    {
-      title: "Solar Panel Installation & Maintenance",
-      category: "Technology",
-      description:
-        "Solar system design, installation, and troubleshooting for rural electrification projects.",
-      details: ["Batch: Shrawan – Ashwin 2081", "Graduates: 24/25 · Employed: 20"],
-      footer: "96% Graduation Rate",
-    },
-    {
-      title: "Pharmacy Assistant Training",
-      category: "Healthcare",
-      description:
-        "Pharmaceutical knowledge, drug dispensing, storage, and customer advisory skills for pharmacy assistants.",
-      details: ["Batch: Chaitra 2080 – Baisakh 2081", "Graduates: 32/35 · Employed: 28"],
-      footer: "91% Graduation Rate",
-    },
-    {
-      title: "Entrepreneurship & Business Planning",
-      category: "Business",
-      description:
-        "Business model canvas, market research, financial projection, and pitch skills for local entrepreneurs.",
-      details: ["Batch: Mangsir – Falgun 2081", "Graduates: 40/40 · Businesses Started: 14"],
-      footer: "100% Graduation Rate",
-    },
-    {
-      title: "Motorcycle Repair & Auto Mechanics",
-      category: "Vocational",
-      description:
-        "Engine diagnostics, two-wheeler repair, and basic automotive maintenance for garage employment.",
-      details: ["Batch: Baisakh – Ashadh 2081", "Graduates: 20/22 · Employed: 18"],
-      footer: "91% Graduation Rate",
-    },
-    {
-      title: "Graphic Design & DTP",
-      category: "Technology",
-      description:
-        "Adobe Photoshop, Illustrator, CorelDraw for print media, signage, and digital content creation.",
-      details: ["Batch: Shrawan – Ashwin 2080", "Graduates: 26/28 · Employed: 22"],
-      footer: "93% Graduation Rate",
-    },
-  ],
-};
-
 const partnerStyles = [
   "bg-blue-100 text-blue-700",
   "bg-emerald-100 text-emerald-800",
@@ -236,7 +98,53 @@ type ApiProgram = {
   description: string | null;
   startDate: string | null;
   endDate: string | null;
+  trainingStatus: "UPCOMING" | "ONGOING" | "COMPLETED";
 };
+
+const statusToTrainingTab: Record<ApiProgram["trainingStatus"], TrainingTab> = {
+  UPCOMING: "upcoming",
+  ONGOING: "ongoing",
+  COMPLETED: "completed",
+};
+
+function getProgramCategory(name: string): TrainingCategory {
+  const normalizedName = name.toLowerCase();
+
+  if (["health", "nursing", "pharmacy"].some((term) => normalizedName.includes(term))) {
+    return "Healthcare";
+  }
+  if (["computer", "network", "digital", "mobile", "graphic", "solar", "electrical"].some((term) => normalizedName.includes(term))) {
+    return "Technology";
+  }
+  if (["business", "e-commerce", "cooperative", "accounting"].some((term) => normalizedName.includes(term))) {
+    return "Business";
+  }
+  return "Vocational";
+}
+
+function toTrainingProgram(program: ApiProgram): TrainingProgram {
+  const details = [
+    program.startDate &&
+      `Starts: ${new Date(program.startDate).toLocaleDateString()}`,
+    program.endDate &&
+      `Ends: ${new Date(program.endDate).toLocaleDateString()}`,
+  ].filter((detail): detail is string => Boolean(detail));
+
+  return {
+    id: program.id,
+    title: program.name,
+    category: getProgramCategory(program.name),
+    description: program.description || "Program details will be announced soon.",
+    details: details.length > 0 ? details : ["Schedule to be announced."],
+    seats: program.trainingStatus === "UPCOMING" ? "Open for applications" : undefined,
+    footer:
+      program.trainingStatus === "COMPLETED"
+        ? "Training completed"
+        : program.trainingStatus === "ONGOING"
+          ? "Currently running"
+          : "Open for applications",
+  };
+}
 
 type ApiPartner = {
   id: string;
@@ -263,6 +171,7 @@ export default function HomePage() {
   const impactRef = useRef<HTMLElement | null>(null);
   const [apiPrograms, setApiPrograms] = useState<ApiProgram[]>([]);
   const [programsLoading, setProgramsLoading] = useState(true);
+  const [programsError, setProgramsError] = useState("");
   const [partners, setPartners] = useState<ApiPartner[]>([]);
   const [partnersLoading, setPartnersLoading] = useState(true);
   const [partnersError, setPartnersError] = useState("");
@@ -278,27 +187,41 @@ export default function HomePage() {
     toastTimer.current = setTimeout(() => setToast(""), 3200);
   };
   useEffect(() => {
-  const loadPrograms = async () => {
-    try {
-      const response = await fetch("/api/programs", { cache: "no-store" });
-      const result = await response.json();
+    let active = true;
 
-      if (!response.ok || !result.success) {
-        throw new Error(result.message || "Unable to load programs.");
+    const loadPrograms = async () => {
+      try {
+        const response = await fetch("/api/programs", { cache: "no-store" });
+        const result = await response.json();
+
+        if (!response.ok || !result.success || !Array.isArray(result.programs)) {
+          throw new Error(result.message || "Unable to load programs.");
+        }
+
+        if (active) {
+          setApiPrograms(result.programs);
+          setProgramsError("");
+        }
+      } catch (error) {
+        console.error("Program loading error:", error);
+        if (active) {
+          setProgramsError("Unable to load training programs. Retrying automatically.");
+        }
+      } finally {
+        if (active) setProgramsLoading(false);
       }
+    };
 
-      setApiPrograms(result.programs);
-      setToast("");
-    } catch (error) {
-      console.error("Program loading error:", error);
-      showToast("Unable to load training programs. Please refresh the page.");
-    } finally {
-      setProgramsLoading(false);
-    }
-  };
+    void loadPrograms();
+    const interval = window.setInterval(() => {
+      void loadPrograms();
+    }, 15000);
 
-  loadPrograms();
-}, []);
+    return () => {
+      active = false;
+      window.clearInterval(interval);
+    };
+  }, []);
 
 useEffect(() => {
   const loadDonors = async () => {
@@ -365,6 +288,14 @@ useEffect(() => {
       if (toastTimer.current) clearTimeout(toastTimer.current);
     };
   }, []);
+
+  const programsForTab = apiPrograms
+    .filter((program) => statusToTrainingTab[program.trainingStatus] === activeTab)
+    .slice(0, activeTab === "upcoming" ? 6 : undefined)
+    .map(toTrainingProgram);
+  const availablePrograms = apiPrograms.filter(
+    (program) => program.trainingStatus !== "COMPLETED",
+  );
 
   const submitEnrollment = async (event: FormEvent<HTMLFormElement>) => {
   event.preventDefault();
@@ -639,9 +570,24 @@ useEffect(() => {
             ))}
           </div>
           <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-            {programs[activeTab].map((program) => (
-              <TrainingCard categoryStyles={categoryStyles} key={program.title} program={program} tab={activeTab} />
-            ))}
+            {programsLoading ? (
+              <p className="text-sm text-slate-500">Loading training programs...</p>
+            ) : programsError ? (
+              <p className="text-sm text-red-600" role="status">{programsError}</p>
+            ) : programsForTab.length === 0 ? (
+              <p className="text-sm text-slate-500">
+                No {activeTab} training programs are currently available.
+              </p>
+            ) : (
+              programsForTab.map((program) => (
+                <TrainingCard
+                  categoryStyles={categoryStyles}
+                  key={program.id}
+                  program={program}
+                  tab={activeTab}
+                />
+              ))
+            )}
           </div>
         </div>
       </section>
@@ -674,10 +620,10 @@ useEffect(() => {
                 </label>
               </div>
               <label className="mt-4 block text-xs font-semibold text-white/75">Select Training Program *
-              <select aria-required="true"  required className="mt-2 w-full rounded-xl border border-white/20 bg-sky-900 px-4 py-3 text-sm text-white outline-none focus:border-white/60" defaultValue="" name="program" disabled={programsLoading || apiPrograms.length === 0}
-                       ><option className="bg-white text-slate-900" value="">{programsLoading? "Loading programs...": apiPrograms.length === 0  ? "No programs available"  : "-- Choose a Program --"}</option>
+              <select aria-required="true"  required className="mt-2 w-full rounded-xl border border-white/20 bg-sky-900 px-4 py-3 text-sm text-white outline-none focus:border-white/60" defaultValue="" name="program" disabled={programsLoading || availablePrograms.length === 0}
+                       ><option className="bg-white text-slate-900" value="">{programsLoading? "Loading programs...": availablePrograms.length === 0  ? "No programs available"  : "-- Choose a Program --"}</option>
 
-                   {apiPrograms.map((program) => (
+                  {availablePrograms.map((program) => (
                            <option className="bg-white text-slate-900" key={program.id} value={program.id}>
                                {program.name}
                             </option>
@@ -728,7 +674,7 @@ useEffect(() => {
               <label className="mt-4 block text-xs font-semibold text-white/75">Why do you want to join?
                 <textarea className="mt-2 w-full resize-y rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/40 focus:border-white/60" name="motivation" placeholder="Tell us about your motivation..." rows={3} />
               </label>
-              <button className="mt-5 w-full rounded-xl bg-white px-5 py-3.5 text-sm font-bold text-sky-900 shadow-lg transition hover:-translate-y-0.5 hover:bg-sky-50 disabled:cursor-not-allowed disabled:opacity-60" type="submit" disabled={isSubmitting || programsLoading || apiPrograms.length === 0}>  {isSubmitting ? "Submitting Application..." : "Submit Application →"}
+              <button className="mt-5 w-full rounded-xl bg-white px-5 py-3.5 text-sm font-bold text-sky-900 shadow-lg transition hover:-translate-y-0.5 hover:bg-sky-50 disabled:cursor-not-allowed disabled:opacity-60" type="submit" disabled={isSubmitting || programsLoading || availablePrograms.length === 0}>  {isSubmitting ? "Submitting Application..." : "Submit Application →"}
               </button>
            </form>
 

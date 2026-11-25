@@ -249,8 +249,9 @@ export async function POST(request: NextRequest) {
       where: {
         id: programId,
         status: "ACTIVE",
+        trainingStatus: { in: ["UPCOMING", "ONGOING"] },
         project: {
-          status: { in: ["PLANNING", "ACTIVE"] },
+          status: { in: ["PLANNING", "ACTIVE", "COMPLETED"] },
         },
       },
       select: { id: true },
