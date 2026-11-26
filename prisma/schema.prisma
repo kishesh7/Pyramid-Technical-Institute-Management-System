@@ -39,6 +39,7 @@ enum EnrollmentStatus {
   CONTACTED
   APPROVED
   REJECTED
+  COMPLETED
 }
 
 model User {
@@ -232,6 +233,9 @@ model Program {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  durationMonths Int?
+  durationHours  Int?
+
   @@index([projectId])
   @@index([trainingStatus])
 }
@@ -321,6 +325,8 @@ model EnrollmentApplication {
   status           EnrollmentStatus @default(PENDING)
   adminNotes       String?          @db.Text
   reviewedAt       DateTime?
+  completedAt      DateTime?
+  certificate      Certificate?
 
   program Program @relation(fields: [programId], references: [id], onDelete: Restrict)
 
@@ -330,4 +336,30 @@ model EnrollmentApplication {
   @@index([programId])
   @@index([status])
   @@index([createdAt])
+}
+
+enum CertificateStatus {
+  VALID
+  REVOKED
+}
+
+model Certificate {
+  id             String @id @default(cuid())
+  enrollmentId   String @unique
+  certificateNo  String @unique
+  verificationId String @unique
+
+  studentName    String
+  programName    String
+  completionDate DateTime
+  issueDate      DateTime @default(now())
+
+  status       CertificateStatus @default(VALID)
+  revokedAt    DateTime?
+  revokeReason String?
+
+  enrollment EnrollmentApplication @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

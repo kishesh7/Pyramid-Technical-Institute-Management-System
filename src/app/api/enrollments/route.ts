@@ -60,13 +60,14 @@ export async function GET(request: NextRequest) {
     const limit = 20;
     const skip = (page - 1) * limit;
 
-    const validStatuses = [
-      "ALL",
-      "PENDING",
-      "CONTACTED",
-      "APPROVED",
-      "REJECTED",
-    ];
+  const validStatuses = [
+  "ALL",
+  "PENDING",
+  "CONTACTED",
+  "APPROVED",
+  "REJECTED",
+  "COMPLETED",
+];
 
     if (!validStatuses.includes(status)) {
       return NextResponse.json(
@@ -81,7 +82,8 @@ export async function GET(request: NextRequest) {
             | "PENDING"
             | "CONTACTED"
             | "APPROVED"
-            | "REJECTED" }
+            | "REJECTED"
+            | "COMPLETED"}
         : {}),
 
       ...(search
@@ -174,6 +176,7 @@ export async function GET(request: NextRequest) {
       contacted: counts.find((item) => item.status === "CONTACTED")?._count._all ?? 0,
       approved: counts.find((item) => item.status === "APPROVED")?._count._all ?? 0,
       rejected: counts.find((item) => item.status === "REJECTED")?._count._all ?? 0,
+      completed: counts.find((item) => item.status === "COMPLETED")?._count._all ?? 0,
     };
 
     return NextResponse.json({

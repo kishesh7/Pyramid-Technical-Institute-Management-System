@@ -8,7 +8,7 @@ import {
   fetchDashboardData,
 } from "@/lib/dashboard-data";
 
-type EnrollmentStatus = "PENDING" | "CONTACTED" | "APPROVED" | "REJECTED";
+type EnrollmentStatus = "PENDING" | "CONTACTED" | "APPROVED" | "REJECTED" | "COMPLETED";
 
 type Application = {
   id: string;
@@ -38,6 +38,7 @@ type Summary = {
   contacted: number;
   approved: number;
   rejected: number;
+  completed: number;
 };
 
 const filters = [
@@ -46,6 +47,7 @@ const filters = [
   "CONTACTED",
   "APPROVED",
   "REJECTED",
+  "COMPLETED",
 ] as const;
 
 const statusStyles: Record<EnrollmentStatus, string> = {
@@ -53,6 +55,7 @@ const statusStyles: Record<EnrollmentStatus, string> = {
   CONTACTED: "bg-sky-100 text-sky-800",
   APPROVED: "bg-sky-100 text-sky-800",
   REJECTED: "bg-rose-100 text-rose-800",
+  COMPLETED: "bg-emerald-100 text-emerald-800",
 };
 
 const emptySummary: Summary = {
@@ -61,6 +64,7 @@ const emptySummary: Summary = {
   contacted: 0,
   approved: 0,
   rejected: 0,
+  completed: 0,
 };
 
 export default function EnrollmentsPage() {
@@ -267,6 +271,7 @@ export default function EnrollmentsPage() {
     { label: "Contacted", value: summary.contacted, style: "border-sky-300" },
     { label: "Approved", value: summary.approved, style: "border-sky-300" },
     { label: "Rejected", value: summary.rejected, style: "border-rose-300" },
+    { label: "Completed", value: summary.completed, style: "border-emerald-300" },
   ];
 
   return (
@@ -634,12 +639,15 @@ export default function EnrollmentsPage() {
                   Save notes
                 </button>
                 <button
-                  type="button"
+                  type="button" 
                   disabled={saving}
                   onClick={() => void updateApplication("CONTACTED")}
                   className="rounded-lg bg-sky-700 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50"
                 >
                   Mark contacted
+                </button>
+                <button type="button" disabled={saving || selected.status === "COMPLETED"}  onClick={() => void updateApplication("COMPLETED")} className="rounded-lg bg-emerald-700 px-3 py-2 text-xs font-semibold text-white disabled:opacity-50">
+                    Mark completed
                 </button>
                 <button
                   type="button"

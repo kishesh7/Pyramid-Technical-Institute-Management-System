@@ -17,6 +17,7 @@ const navigation = [
   { label: "Dashboard", href: "/dashboard", icon: "⌂" },
   { label: "Members", href: "/dashboard/members", icon: "♙" },
   { label: "Enrollments", href: "/dashboard/enrollments", icon: "▤" },
+  { label: "Certificates", href: "/dashboard/certificates", icon: "🏅" },
   { label: "Partners", href: "/dashboard/partners", icon: "◎" },
   { label: "Beneficiaries", href: "/dashboard/beneficiaries", icon: "♡" },
   { label: "Donors", href: "/dashboard/donors", icon: "♧" },
@@ -126,8 +127,7 @@ function DashboardShellContent({
 
         <nav
           className="flex-1 space-y-1 px-3 py-5"
-          aria-label="Dashboard navigation"
-        >
+          aria-label="Dashboard navigation">
           {navigation.map((item) => {
             const active =
               item.href === "/dashboard"

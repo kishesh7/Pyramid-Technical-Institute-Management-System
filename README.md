@@ -36,6 +36,10 @@ npm run db:seed-programs
 
 The seed script is idempotent: it reuses the training project and skips program records that already exist.
 
+## Certificates
+
+Administrators can issue certificates for completed students with a passport photo and download a generated PDF from the certificate dashboard. Each PDF includes a QR code linking to `/verify/[verificationId]`, where the certificate status is checked against the current records. The supplied institute logo, seal artwork, director signature, and SIL Open Font License font files are stored in `public/certificates`.
+
 ## Images
 
 Gallery images are served from `public/images` and are already included:

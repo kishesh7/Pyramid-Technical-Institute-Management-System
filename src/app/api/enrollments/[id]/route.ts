@@ -105,12 +105,13 @@ export async function PATCH(
 
     const data = body as Record<string, unknown>;
 
-    const validStatuses = [
-      "PENDING",
-      "CONTACTED",
-      "APPROVED",
-      "REJECTED",
-    ];
+  const validStatuses = [
+  "PENDING",
+  "CONTACTED",
+  "APPROVED",
+  "REJECTED",
+  "COMPLETED",
+];
 
     const hasStatus = Object.prototype.hasOwnProperty.call(data, "status");
     const hasNotes = Object.prototype.hasOwnProperty.call(data, "adminNotes");
@@ -169,28 +170,33 @@ export async function PATCH(
       );
     }
 
-    const status = hasStatus
-      ? data.status as
-          | "PENDING"
-          | "CONTACTED"
-          | "APPROVED"
-          | "REJECTED"
-      : undefined;
+   const status = hasStatus
+  ? data.status as
+      | "PENDING"
+      | "CONTACTED"
+      | "APPROVED"
+      | "REJECTED"
+      | "COMPLETED"
+  : undefined;
 
     const application = await prisma.enrollmentApplication.update({
       where: { id },
-      data: {
-        ...(status !== undefined
-          ? {
-              status,
-              reviewedAt:
-                status === "APPROVED" || status === "REJECTED"
-                  ? new Date()
-                  : null,
-            }
-          : {}),
-        ...(hasNotes ? { adminNotes } : {}),
-      },
+   data: {
+  ...(status !== undefined
+    ? {
+        status,
+        reviewedAt:
+          status === "APPROVED" || status === "REJECTED"
+            ? new Date()
+            : null,
+        completedAt:
+          status === "COMPLETED"
+            ? new Date()
+            : null,
+      }
+    : {}),
+  ...(hasNotes ? { adminNotes } : {}),
+},
       select: {
         id: true,
         fullName: true,
