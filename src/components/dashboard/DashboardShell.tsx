@@ -202,11 +202,7 @@ function DashboardShellContent({
               </p>
             </div>
 
-<div className="absolute right-4 sm:right-8 md:right-20 lg:right-40 xl:right-60">
-  <p className="text-sm font-semibold uppercase tracking-wider text-dark-blue-600 mask-radial-from-neutral-400">
-    Welcome Back, Administrator
-  </p>
-</div>
+
           </div>
 
           <div className="flex items-center gap-3">

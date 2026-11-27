@@ -8,46 +8,104 @@ import {
   fetchDashboardData,
 } from "@/lib/dashboard-data";
 
-const stats = [
-  {
-    key: "members",
-    title: "Total Members",
-    description: "Active registered members",
-    icon: "👤",
-  },
-  {
-    key: "beneficiaries",
-    title: "Beneficiaries",
-    description: "People receiving support",
-    icon: "🤝",
-  },
-  {
-    key: "donors",
-    title: "Total Donors",
-    description: "Active donor records",
-    icon: "💲",
-  },
-  {
-    key: "ongoingPrograms",
-    title: "Ongoing Programs",
-    description: "Currently running training programs",
-    icon: "⏳ ",
-  },
+type StatIconName =
+  | "users"
+  | "heart"
+  | "dollar"
+  | "clock"
+  | "file-check"
+  | "badge-check";
+
+type DashboardStat = {
+  key: string;
+  title: string;
+  description: string;
+  icon: StatIconName;
+  iconStyle: string;
+  glowStyle: string;
+  cardStyle: string;
+  valueStyle: string;
+  href?: string;
+};
+
+
+const stats: DashboardStat[] = [
+{
+  key: "members",
+  title: "Total Members",
+  description: "Active registered members",
+  icon: "users",
+  iconStyle: "bg-sky-300/20 text-sky-200 ring-1 ring-sky-300/25",
+  glowStyle: "bg-sky-300/20",
+  cardStyle:
+    "border-sky-300/25 bg-gradient-to-br from-[#245778] via-[#1D4968] to-[#163B57] hover:border-sky-300/50 hover:shadow-[0_20px_40px_rgba(56,189,248,0.20)]",
+  valueStyle: "text-white",
+},
+
+
+{
+  key: "beneficiaries",
+  title: "Beneficiaries",
+  description: "People receiving support",
+  icon: "heart",
+  iconStyle: "bg-teal-300/20 text-teal-200 ring-1 ring-teal-300/25",
+  glowStyle: "bg-teal-300/20",
+  cardStyle:
+    "border-teal-300/25 bg-gradient-to-br from-[#315F58] via-[#284F49] to-[#1E403B] hover:border-teal-300/50 hover:shadow-[0_20px_40px_rgba(94,234,212,0.20)]",
+  valueStyle: "text-white",
+},
+
+{
+  key: "donors",
+  title: "Total Donors",
+  description: "Active donor records",
+  icon: "dollar",
+  iconStyle: "bg-green-300/20 text-green-200 ring-1 ring-green-300/25",
+  glowStyle: "bg-green-300/20",
+  cardStyle:
+    "border-green-300/25 bg-gradient-to-br from-[#315B45] via-[#284B3A] to-[#1E3D30] hover:border-green-300/50 hover:shadow-[0_20px_40px_rgba(74,222,128,0.20)]",
+  valueStyle: "text-white",
+},
+{
+  key: "ongoingPrograms",
+  title: "Ongoing Programs",
+  description: "Currently running training programs",
+  icon: "clock",
+  iconStyle: "bg-yellow-300/15 text-yellow-200 ring-1 ring-yellow-300/20",
+  glowStyle: "bg-yellow-300/20",
+  cardStyle:
+    "border-yellow-200/20 bg-gradient-to-br from-[#5C512D] via-[#514625] to-[#40391F] hover:border-yellow-200/40 hover:shadow-[0_20px_40px_rgba(234,179,8,0.16)]",
+  valueStyle: "text-white",
+},
+
   {
     key: "eligibleCertificates",
     title: "Eligible Certificates",
     description: "Completed training awaiting certificates",
-    icon: "🎓",
+    icon: "file-check",
+    iconStyle: "bg-cyan-400/15 text-cyan-300 ring-1 ring-cyan-400/20",
+    glowStyle: "bg-cyan-500/20",
+    cardStyle:
+      "border-cyan-400/20 bg-gradient-to-br from-[#123D4B] via-[#10313E] to-[#0D2635] hover:border-cyan-400/40 hover:shadow-[0_20px_40px_rgba(6,182,212,0.18)]",
+    valueStyle: "text-white",
     href: "/dashboard/certificates?tab=eligible",
   },
-  {
-    key: "issuedCertificates",
-    title: "Issued Certificates",
-    description: "Certificates already issued",
-    icon: "📜",
-    href: "/dashboard/certificates?tab=issued",
-  },
+
+{
+  key: "issuedCertificates",
+  title: "Issued Certificates",
+  description: "Certificates already issued",
+  icon: "badge-check",
+  iconStyle: "bg-pink-300/20 text-pink-200 ring-1 ring-pink-300/25",
+  glowStyle: "bg-pink-300/20",
+  cardStyle:
+    "border-pink-300/25 bg-gradient-to-br from-[#663B50] via-[#573146] to-[#46263A] hover:border-pink-300/50 hover:shadow-[0_20px_40px_rgba(244,114,182,0.20)]",
+  valueStyle: "text-white",
+  href: "/dashboard/certificates?tab=issued",
+},
+
 ];
+
 
 const activities = [
   "Your Pyramid NGO dashboard is ready.",
@@ -149,29 +207,63 @@ export default function DashboardPage() {
       </section> */}
 
       {/* Statistics */}
-      <section className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+      <section className="grid auto-rows-fr gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {stats.map((stat) => {
           const card = (
-            <div className="group rounded-2xl border border-sky-100/80 bg-white p-5 shadow-[0_12px_32px_rgba(14,116,144,0.07)] transition duration-300 hover:-translate-y-1 hover:border-sky-200 hover:shadow-[0_18px_38px_rgba(14,116,144,0.13)]">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-slate-500">
-                  {stat.title}
-                </p>
-                <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-sky-100 bg-[linear-gradient(135deg,#f0f9ff,#bae6fd)] text-xl text-sky-700 shadow-sm transition group-hover:scale-105">
-                  {stat.icon}
-                </span>
-              </div>
+            <div
+              className={`group relative isolate flex h-full min-h-[184px] flex-col overflow-hidden rounded-2xl border p-5 shadow-[0_16px_38px_rgba(2,6,23,0.28)] ring-1 ring-inset ring-white/5 transition duration-300 ease-out hover:-translate-y-1 ${stat.cardStyle}`}
+            >
+              <span
+                aria-hidden="true"
+                className={`pointer-events-none absolute -right-10 -top-12 h-40 w-40 rounded-full opacity-35 blur-3xl transition-opacity duration-300 group-hover:opacity-60 ${stat.glowStyle}`}
+              />
+              <div className="relative z-10 flex h-full flex-col">
+                <div className="flex items-start justify-between">
+                  <span
+                    className={`flex h-12 w-12 items-center justify-center rounded-2xl ring-1 ring-inset shadow-inner transition duration-300 group-hover:scale-105 ${stat.iconStyle}`}
+                  >
+                    <StatIcon name={stat.icon} />
+                  </span>
+                  {stat.href && (
+                    <span
+                      aria-hidden="true"
+                      className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/45 transition duration-200 group-hover:border-white/20 group-hover:bg-white/10 group-hover:text-white/90"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        className="h-4 w-4"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                      >
+                        <path
+                          d="M7 17 17 7M7 7h10v10"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </span>
+                  )}
+                </div>
 
-              <p className="mt-4 text-3xl font-bold text-slate-900">
-                {summaryLoading
-                  ? "…"
-                  : summaryError
-                    ? "—"
-                    : (statValues[stat.key] ?? 0).toLocaleString()}
-              </p>
-              <p className="mt-2 text-xs text-slate-400">
-                {stat.description}
-              </p>
+                <div className="mt-auto pt-6">
+                  <p className="text-sm font-semibold text-white/80">
+                    {stat.title}
+                  </p>
+                  <p
+                    className={`mt-1 text-3xl font-bold tracking-tight tabular-nums ${stat.valueStyle}`}
+                  >
+                    {summaryLoading
+                      ? "…"
+                      : summaryError
+                        ? "—"
+                        : (statValues[stat.key] ?? 0).toLocaleString()}
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-white/65">
+                    {stat.description}
+                  </p>
+                </div>
+              </div>
             </div>
           );
 
@@ -180,12 +272,14 @@ export default function DashboardPage() {
               key={stat.title}
               href={stat.href}
               aria-label={`Open ${stat.title} in Certificate Management`}
-              className="rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-offset-2"
+              className="block h-full rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-600 focus-visible:ring-offset-2"
             >
               {card}
             </Link>
           ) : (
-            <div key={stat.title}>{card}</div>
+            <div key={stat.title} className="h-full">
+              {card}
+            </div>
           );
         })}
       </section>
@@ -448,4 +542,61 @@ export default function DashboardPage() {
       </section>
     </div>
   );
+}
+
+function StatIcon({ name }: { name: StatIconName }) {
+  const sharedProps = {
+    className: "h-5 w-5",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1.7,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    "aria-hidden": true as const,
+  };
+
+  switch (name) {
+    case "users":
+      return (
+        <svg {...sharedProps}>
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+      );
+    case "heart":
+      return (
+        <svg {...sharedProps}>
+          <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z" />
+        </svg>
+      );
+    case "dollar":
+      return (
+        <svg {...sharedProps}>
+          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+        </svg>
+      );
+    case "clock":
+      return (
+        <svg {...sharedProps}>
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2" />
+        </svg>
+      );
+    case "file-check":
+      return (
+        <svg {...sharedProps}>
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <path d="M14 2v6h6M8 15l2.5 2.5L16 12" />
+        </svg>
+      );
+    case "badge-check":
+      return (
+        <svg {...sharedProps}>
+          <circle cx="12" cy="12" r="9" />
+          <path d="m8 12 2.5 2.5L16 9" />
+        </svg>
+      );
+  }
 }
