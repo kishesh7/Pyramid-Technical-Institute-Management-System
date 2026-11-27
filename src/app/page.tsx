@@ -75,7 +75,7 @@ const siteLinks = [
 ];
 
 const contactDetails: { icon: string; title: string; description: ReactNode }[] = [
-  { icon: "📍", title: "Our Location", description: <>Itahari-9, Pragati Chowk<br />Sunsari, Koshi Province No. 1, Nepal</> },
+  { icon: "📍", title: "Our Location", description: <>Itahari-9, Pragati Chowk<br />Sunsari, Koshi Province, Nepal</> },
   { icon: "📞", title: "Phone & WhatsApp", description: <>025-588526 (Office)<br />+977 98000993921 (WhatsApp)</> },
   { icon: "✉️", title: "Email", description: <>info@pyramidtechnical.org.np<br />admission@pyramidtechnical.org.np</> },
   { icon: "🕐", title: "Office Hours", description: <>Sunday – Friday: 9:00 AM – 5:00 PM<br />Saturday: Closed</> },
@@ -579,7 +579,7 @@ useEffect(() => {
 
       {/* Description */}
       <p className="mt-7 max-w-xl text-base leading-8 text-slate-600 sm:text-lg">
-        Pyramid Technical Institute empowers youth across Sunsari
+        Pyramid Technical Institute empowers youth across Nepal
         with quality CTEVT-affiliated vocational training. We bridge
         the gap between skills and opportunity for a brighter Nepal.
       </p>
@@ -706,7 +706,7 @@ useEffect(() => {
             </div>
             <div>
               <p className="mb-4 text-[15px] leading-7 text-slate-600">
-                Pyramid Technical Institute (PTI) is a non-governmental organization committed to reducing unemployment and enhancing livelihood opportunities in the Sunsari district of Province No. 1, Nepal.
+                Pyramid Technical Institute (PTI) is a non-governmental organization committed to reducing unemployment and enhancing livelihood opportunities in the Sunsari district of koshi Province, Nepal.
               </p>
               <p className="text-[15px] leading-7 text-slate-600">
                 Founded in 2011, we deliver CTEVT-affiliated technical and vocational training to youth, women, and marginalized communities — equipping them with skills for dignified careers and sustainable livelihoods.
