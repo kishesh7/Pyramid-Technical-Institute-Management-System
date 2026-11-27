@@ -56,7 +56,7 @@ const partnerStyles = [
 
 const impactStats = [
   { icon: "🎓", target: 1800, suffix: "+", label: "Trained & Certified Graduates since 2010", accent: "from-sky-500 to-teal-500" },
-  { icon: "👩", target: 64, suffix: "%", label: "Women & Girls trained across all programs", accent: "from-rose-500 to-amber-500" },
+  { icon: "👸🏻", target: 64, suffix: "%", label: "Women & Girls trained across all programs", accent: "from-rose-500 to-amber-500" },
   { icon: "💼", target: 98, suffix: "%", label: "Employment or self-employment placement rate", accent: "from-emerald-500 to-sky-500" },
   { icon: "🏘️", target: 40, suffix: "+", label: "Villages and wards reached in Sunsari", accent: "from-violet-500 to-rose-500" },
   { icon: "📚", target: 24, suffix: "", label: "Distinct training programs offered", accent: "from-amber-500 to-orange-500" },
@@ -75,7 +75,7 @@ const siteLinks = [
 ];
 
 const contactDetails: { icon: string; title: string; description: ReactNode }[] = [
-  { icon: "📍", title: "Our Location", description: <>Itahari-9, Pragati Chowk<br />Sunsari, Province No. 1, Nepal</> },
+  { icon: "📍", title: "Our Location", description: <>Itahari-9, Pragati Chowk<br />Sunsari, Koshi Province No. 1, Nepal</> },
   { icon: "📞", title: "Phone & WhatsApp", description: <>025-588526 (Office)<br />+977 98000993921 (WhatsApp)</> },
   { icon: "✉️", title: "Email", description: <>info@pyramidtechnical.org.np<br />admission@pyramidtechnical.org.np</> },
   { icon: "🕐", title: "Office Hours", description: <>Sunday – Friday: 9:00 AM – 5:00 PM<br />Saturday: Closed</> },
@@ -431,85 +431,235 @@ useEffect(() => {
         onNavigate={() => setMenuOpen(false)}
       />
 
-      <section
-        className="relative flex min-h-190 scroll-mt-28 items-center overflow-hidden bg-[linear-gradient(145deg,#eaf7ff_0%,#dbeeff_40%,#f0faff_70%,#e8f8f8_100%)] px-5 pb-24 pt-36 sm:px-8 lg:min-h-screen lg:px-12"
-        id="hero"
-      >
-        <div className="pointer-events-none absolute -right-20 -top-28 h-136 w-136 rounded-full bg-sky-400/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-24 -left-20 h-96 w-96 rounded-full bg-teal-500/15 blur-3xl" />
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle,#0ea5e9_1.5px,transparent_1.5px)] bg-size-[32px_32px] opacity-[0.035]" />
-        <div className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-14 lg:grid-cols-2">
-          <div>
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-sky-300/70 bg-sky-400/10 px-4 py-2 text-xs font-semibold tracking-wide text-sky-800">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-sky-600" />
-              Registered NGO · Itahari, Sunsari
-            </div>
-            <h1 className="mb-6 font-display text-5xl font-bold leading-[1.08] text-slate-900 sm:text-6xl">
-              Building Skills,
-              <br />
-              <span className="bg-linear-to-r from-sky-600 to-teal-600 bg-clip-text text-transparent">Transforming</span>
-              <br />
-              Communities
-            </h1>
-            <p className="mb-8 max-w-xl text-base leading-8 text-slate-600">
-              Pyramid Technical Institute empowers youth across Sunsari with quality CTEVT-affiliated vocational training. We bridge the gap between skills and opportunity for a brighter Nepal.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <a className="rounded-xl bg-linear-to-r from-sky-600 to-sky-800 px-7 py-3.5 text-sm font-bold text-white shadow-lg shadow-sky-600/30 transition hover:-translate-y-0.5" href="#trainings">
-                Explore Programs
-              </a>
-              <a className="rounded-xl border-2 border-sky-300 bg-white px-7 py-3 text-sm font-semibold text-sky-800 transition hover:border-sky-500 hover:bg-sky-50" href="#register">
-                Register Today
-              </a>
-            </div>
-            <div className="mt-10 flex flex-wrap gap-x-8 gap-y-5 border-t border-sky-300/40 pt-7">
-              {[
-                ["1,800+", "Graduates"],
-                ["24", "Programs"],
-                ["14+", "Partner NGOs"],
-                ["98%", "Placement Rate"],
-              ].map(([value, label]) => (
-                <div key={label}>
-                  <div className="font-display text-2xl font-bold text-sky-700">{value}</div>
-                  <div className="mt-1 text-xs font-medium text-slate-500">{label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="relative mx-auto hidden h-97.5 w-full max-w-md lg:block">
-            <div className="absolute inset-x-0 top-0 rounded-2xl border border-sky-200 bg-white p-7 shadow-2xl shadow-slate-900/10">
-              <div className="mb-3 text-3xl">🎓</div>
-              <h2 className="mb-1 text-sm font-bold text-slate-900">CTEVT Affiliated Training</h2>
-              <p className="text-xs leading-5 text-slate-500">Nationally recognized certifications across 24 programs</p>
-              <div className="mt-5 flex flex-wrap gap-2">
-                <span className="rounded-full bg-sky-100 px-3 py-1 text-[11px] font-semibold text-sky-800">Technology</span>
-                <span className="rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-semibold text-emerald-700">Healthcare</span>
-                <span className="rounded-full bg-orange-100 px-3 py-1 text-[11px] font-semibold text-orange-700">Vocational</span>
-              </div>
-            </div>
-            <div className="absolute bottom-10 left-4 right-10 rounded-2xl border border-sky-200 bg-white p-6 shadow-2xl shadow-slate-900/10">
-              <div className="flex items-center gap-4">
-                <span className="font-display text-3xl font-bold text-sky-600">98%</span>
-                <span>
-                  <span className="block text-sm font-bold text-slate-900">Placement Rate</span>
-                  <span className="text-xs text-slate-500">Employed within 3 months</span>
-                </span>
-              </div>
-            </div>
-          </div>
+     
+<section
+  id="hero"
+  className="relative isolate min-h-[780px] scroll-mt-20 overflow-hidden bg-[linear-gradient(145deg,#ffffff_0%,#f8fcff_40%,#f0f9ff_75%,#ffffff_100%)] pt-28 sm:pt-32 lg:min-h-[760px] lg:pt-32"
+>
+  {/* Original background decorations */}
+  <div className="pointer-events-none absolute -right-20 -top-28 -z-10 h-136 w-136 rounded-full bg-sky-400/20 blur-3xl" />
+
+  <div className="pointer-events-none absolute -bottom-24 -left-20 -z-10 h-96 w-96 rounded-full bg-teal-500/15 blur-3xl" />
+
+  <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle,#0ea5e9_1.5px,transparent_1.5px)] bg-size-[32px_32px] opacity-[0.035]" />
+
+  <div className="relative mx-auto grid min-h-[850px] w-full max-w-[1440px] items-start gap-12 px-5 pb-24 pt-10 sm:items-center sm:px-8 sm:pt-10 lg:min-h-[760px] lg:grid-cols-[0.95fr_1.05fr] lg:gap-8 lg:px-12 lg:pb-28 lg:pt-0">
+
+    {/* RIGHT IMAGE */}
+    <div className="absolute inset-0 z-0 h-full w-full overflow-hidden lg:relative lg:inset-auto lg:order-2 lg:mx-auto lg:h-auto lg:max-w-2xl lg:overflow-visible">
+
+      {/* Main image */}
+      <div className="absolute inset-0 overflow-hidden lg:relative lg:h-[610px] lg:rounded-[2rem]">
+
+        <img
+          src="/gallery/pyramid3.png"
+          alt="Students learning vocational and computer skills at Pyramid Technical Institute"
+          className="absolute inset-0 h-full w-full object-cover object-center"
+        />
+
+        {/* Mobile overlay: original light blue background remains visible */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#eaf7ff]/95 via-[#eaf7ff]/80 to-[#e8f8f8]/60 lg:hidden" />
+
+        {/* Desktop overlay */}
+        <div className="absolute inset-0 hidden bg-gradient-to-t from-slate-950/65 via-transparent to-slate-900/5 lg:block" />
+
+        {/* Desktop image caption */}
+        <div className="absolute bottom-0 left-0 hidden max-w-lg p-9 lg:block">
+
+          <h2 className="mt-5 text-3xl font-bold leading-tight text-white">
+            Empowering youth through quality education and practical skills
+          </h2>
+
+          <p className="mt-3 max-w-md text-sm leading-6 text-white/85">
+            Creating opportunities for individuals and communities
+            through vocational training and skill development.
+          </p>
+
         </div>
-        <svg className="absolute bottom-0 left-0 h-12 w-full" viewBox="0 0 1440 60" preserveAspectRatio="none" aria-hidden="true">
-          <path d="M0,40 C360,0 1080,80 1440,20 L1440,60 L0,60 Z" fill="#FFFFFF" />
-        </svg>
-      </section>
+
+      </div>
+
+      {/* Floating training card - desktop only */}
+      <div className="absolute -left-8 top-12 hidden max-w-[245px] rounded-2xl border border-white/80 bg-white/95 p-5 shadow-xl shadow-slate-900/10 backdrop-blur-xl lg:block">
+
+        <div className="flex items-center gap-3">
+
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-sky-100 text-xl">
+            🎓
+          </div>
+
+          <div>
+            <p className="text-sm font-bold text-slate-900">
+              CTEVT Affiliated
+            </p>
+
+            <p className="mt-1 text-xs text-slate-500">
+              Practical vocational training
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* Floating placement card - desktop only */}
+      <div className="absolute -bottom-6 right-8 hidden rounded-2xl border border-white/80 bg-white/95 p-5 shadow-xl shadow-slate-900/10 backdrop-blur-xl lg:block">
+
+        <div className="flex items-center gap-3">
+
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-teal-50">
+
+            <svg
+              className="h-6 w-6 text-teal-700"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              aria-hidden="true"
+            >
+              <path d="M3 12l5 5L21 4" />
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+            </svg>
+
+          </div>
+
+          <div>
+            <p className="text-sm font-bold text-slate-900">
+              Skills to Employment
+            </p>
+
+            <p className="mt-1 text-xs text-slate-500">
+              Building a brighter future
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    {/* LEFT CONTENT */}
+    <div className="relative z-10 lg:order-1 lg:py-10">
+
+      {/* Animated NGO badge */}
+      <div className="mb-7 inline-flex items-center gap-2.5 rounded-full border border-sky-200 bg-sky-50/90 px-4 py-2 text-xs font-semibold tracking-wide text-sky-800 shadow-sm shadow-sky-900/5 backdrop-blur-sm">
+
+        <span className="relative flex h-2.5 w-2.5 shrink-0">
+
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-teal-400 opacity-75" />
+
+          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-teal-500" />
+
+        </span>
+
+        <span>
+          Registered NGO
+          <span className="mx-2 text-sky-300">·</span>
+          Itahari, Sunsari
+        </span>
+
+      </div>
+
+      {/* Main heading */}
+      <h1 className="max-w-2xl font-display text-4xl font-bold leading-[1.08] tracking-tight text-slate-900 sm:text-5xl lg:text-6xl lg:text-[68px]">
+
+        Building Skills,
+        <br />
+
+        <span className="bg-gradient-to-r from-sky-600 to-teal-600 bg-clip-text text-transparent">
+          Transforming
+        </span>
+
+        <br />
+
+        Communities
+
+      </h1>
+
+      {/* Description */}
+      <p className="mt-7 max-w-xl text-base leading-8 text-slate-600 sm:text-lg">
+        Pyramid Technical Institute empowers youth across Sunsari
+        with quality CTEVT-affiliated vocational training. We bridge
+        the gap between skills and opportunity for a brighter Nepal.
+      </p>
+
+      {/* Action buttons */}
+      <div className="mt-9 flex flex-wrap items-center gap-4">
+
+        <a
+          href="#trainings"
+          className="group inline-flex items-center gap-3 rounded-xl bg-sky-700 px-7 py-4 text-sm font-bold text-white shadow-lg shadow-sky-700/20 transition-all hover:-translate-y-1 hover:bg-sky-800 hover:shadow-xl"
+        >
+          Explore Programs
+
+          <span className="transition-transform group-hover:translate-x-1">
+            →
+          </span>
+
+        </a>
+
+        <a
+          href="#register"
+          className="inline-flex items-center gap-3 rounded-xl border border-slate-200 bg-white/90 px-7 py-4 text-sm font-semibold text-slate-800 transition-all hover:border-sky-300 hover:bg-sky-50"
+        >
+          Register Today
+        </a>
+
+      </div>
+
+      {/* Statistics */}
+      <div className="mt-8 grid max-w-xl grid-cols-2 gap-3 sm:mt-12 sm:gap-x-6 sm:gap-y-6 sm:border-t sm:border-sky-300/50 sm:pt-8 sm:grid-cols-4">
+
+        {[
+          ["1,800+", "Graduates"],
+          ["24", "Programs"],
+          ["14+", "Partner NGOs"],
+          ["98%", "Placement Rate"],
+        ].map(([value, label]) => (
+
+          <div className="rounded-2xl border border-white/80 bg-white/70 p-4 shadow-md shadow-sky-900/5 backdrop-blur-sm sm:rounded-none sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none sm:backdrop-blur-none" key={label}>
+
+            <div className="font-display text-2xl font-bold tracking-tight text-slate-900">
+              {value}
+            </div>
+
+            <div className="mt-1.5 text-xs font-medium text-slate-500">
+              {label}
+            </div>
+
+          </div>
+        ))}
+
+      </div>
+
+    </div>
+
+  </div>
+
+  {/* Bottom decorative wave */}
+  <svg
+    className="pointer-events-none absolute bottom-0 left-0 z-20 h-12 w-full"
+    viewBox="0 0 1440 60"
+    preserveAspectRatio="none"
+    aria-hidden="true"
+  >
+    <path
+      d="M0,40 C360,0 1080,80 1440,20 L1440,60 L0,60 Z"
+      fill="#0A4D57"
+    />
+  </svg>
+</section>
+
+
 
       <section className="bg-linear-to-r from-sky-600 via-sky-800 to-teal-700" aria-label="Institute statistics">
         <div className="mx-auto grid max-w-7xl grid-cols-2 px-5 sm:px-8 lg:grid-cols-4 lg:px-12">
           {[
-            ["🎓", "1,842", "Total Graduates"],
-            ["👩", "64%", "Women Trained"],
-            ["🏘️", "40+", "Villages Reached"],
-            ["🌱", "320+", "Businesses Started"],
+            ["", "1,842", "Total Graduates"],
+            ["", "64%", "Women Trained"],
+            ["", "40+", "Villages Reached"],
+            ["", "320+", "Businesses Started"],
           ].map(([icon, value, label], index) => (
             <div className={`px-3 py-7 text-center sm:px-6 sm:py-9 ${index % 2 === 0 ? "border-r border-white/15 lg:border-r" : "lg:border-r lg:border-white/15"} ${index > 1 ? "border-t border-white/15 lg:border-t-0" : ""} ${index === 3 ? "lg:border-r-0" : ""}`} key={label}>
               <div className="mb-2 text-2xl">{icon}</div>
@@ -880,8 +1030,8 @@ useEffect(() => {
               ))}
               <div className="mt-6 flex h-48 flex-col items-center justify-center gap-3 rounded-2xl bg-linear-to-br from-sky-600 via-sky-800 to-teal-700 text-center">
                 <span className="text-3xl">🗺️</span>
-                <p className="text-sm text-white/75">Itahari, Sunsari — Province No. 1, Nepal</p>
-                <a className="rounded-lg border border-amber-400/50 px-4 py-2 text-xs font-bold text-amber-300 transition hover:bg-amber-400/15" href="https://maps.google.com/?q=Itahari,Sunsari,Nepal" rel="noreferrer" target="_blank">
+                <p className="text-sm text-white/75">Itahari, Sunsari — Koshi Province, Nepal</p>
+                <a className="rounded-lg border border-amber-400/50 px-4 py-2 text-xs font-bold text-amber-300 transition hover:bg-amber-400/15" href="https://maps.google.com/?q=Itahari,Sunsari,Koshi+Province,Nepal" rel="noreferrer" target="_blank">
                   Open in Google Maps →
                 </a>
               </div>
@@ -924,7 +1074,7 @@ useEffect(() => {
                 </span>
               </a>
               <p className="mt-4 max-w-sm text-sm leading-6 text-white/55">
-                Registered NGO providing CTEVT-affiliated vocational and technical training to empower communities in Sunsari, Province No. 1, Nepal.
+                Registered NGO providing CTEVT-affiliated vocational and technical training to empower communities in Sunsari, Koshi Province , Nepal.
               </p>
               <div className="mt-5 flex gap-2">
                 {["f", "in", "yt", "tw"].map((social) => (
@@ -954,7 +1104,7 @@ useEffect(() => {
             ))}
           </div>
           <div className="flex flex-col justify-between gap-3 pt-6 text-xs text-white/40 sm:flex-row">
-            <p>© 2025 Pyramid Technical Institute, Itahari, Sunsari. All rights reserved.</p>
+            <p>© 2026 Pyramid Technical Institute, Itahari, Sunsari. All rights reserved.</p>
             <p>Reg. No: 107615/069/070 · <a className="text-sky-300 hover:text-sky-200" href="#">Privacy Policy</a> · <a className="text-sky-300 hover:text-sky-200" href="#">Terms of Use</a></p>
           </div>
         </div>
