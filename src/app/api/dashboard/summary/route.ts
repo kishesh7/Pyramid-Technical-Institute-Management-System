@@ -31,40 +31,57 @@ export async function GET() {
     // 2. Measure database queries
     const databaseStartedAt = performance.now();
 
-    const [members, beneficiaries, donors, programGroups, donationGroups] =
-      await Promise.all([
-        prisma.member.count({
-          where: { status: "ACTIVE" },
-        }),
+    const [
+      members,
+      beneficiaries,
+      donors,
+      eligibleCertificates,
+      issuedCertificates,
+      programGroups,
+      donationGroups,
+    ] = await Promise.all([
+      prisma.member.count({
+        where: { status: "ACTIVE" },
+      }),
 
-        prisma.beneficiary.count({
-          where: { status: "ACTIVE" },
-        }),
+      prisma.beneficiary.count({
+        where: { status: "ACTIVE" },
+      }),
 
-        prisma.donor.count({
-          where: { status: "ACTIVE" },
-        }),
+      prisma.donor.count({
+        where: { status: "ACTIVE" },
+      }),
 
-        prisma.program.groupBy({
-          by: ["trainingStatus"],
-          where: {
-            status: "ACTIVE",
-            project: {
-              status: {
-                in: ["PLANNING", "ACTIVE", "COMPLETED"],
-              },
+      prisma.enrollmentApplication.count({
+        where: {
+          status: "COMPLETED",
+          completedAt: { not: null },
+          certificate: null,
+        },
+      }),
+
+      prisma.certificate.count(),
+
+      prisma.program.groupBy({
+        by: ["trainingStatus"],
+        where: {
+          status: "ACTIVE",
+          project: {
+            status: {
+              in: ["PLANNING", "ACTIVE", "COMPLETED"],
             },
           },
-          _count: { _all: true },
-        }),
+        },
+        _count: { _all: true },
+      }),
 
-        prisma.donation.groupBy({
-          by: ["currency"],
-          _sum: { amount: true },
-          _count: { _all: true },
-          orderBy: { currency: "asc" },
-        }),
-      ]);
+      prisma.donation.groupBy({
+        by: ["currency"],
+        _sum: { amount: true },
+        _count: { _all: true },
+        orderBy: { currency: "asc" },
+      }),
+    ]);
 
     const databaseMs = performance.now() - databaseStartedAt;
 
@@ -100,6 +117,10 @@ export async function GET() {
           total: group._sum.amount?.toString() ?? "0",
           count: group._count._all,
         })),
+        certificates: {
+          eligible: eligibleCertificates,
+          issued: issuedCertificates,
+        },
       },
     });
   } catch (error) {

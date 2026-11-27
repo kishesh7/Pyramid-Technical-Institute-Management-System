@@ -3,6 +3,7 @@
 
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRouter, useSearchParams } from "next/navigation";
 
 type EligibleApplication = {
   id: string;
@@ -51,10 +52,13 @@ function formatDate(date: string) {
 
 export default function CertificatesPage() {
   const queryClient = useQueryClient();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [search, setSearch] = useState("");
   const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const activeTab = searchParams.get("tab") === "issued" ? "issued" : "eligible";
 
   const eligibleQuery = useQuery({
     queryKey: ["eligible-certificates"],
@@ -256,7 +260,44 @@ export default function CertificatesPage() {
         />
       </div>
 
-      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div
+        role="tablist"
+        aria-label="Certificate management"
+        className="flex gap-2 border-b border-slate-200"
+      >
+        {(["eligible", "issued"] as const).map((tab) => (
+          <button
+            key={tab}
+            id={`${tab}-certificates-tab`}
+            type="button"
+            role="tab"
+            aria-selected={activeTab === tab}
+            aria-controls={`${tab}-certificates-panel`}
+            onClick={() =>
+              router.push(`/dashboard/certificates?tab=${tab}`, {
+                scroll: false,
+              })
+            }
+            className={`border-b-2 px-4 py-3 text-sm font-semibold transition-colors ${
+              activeTab === tab
+                ? "border-sky-700 text-sky-800"
+                : "border-transparent text-slate-500 hover:border-sky-200 hover:text-sky-700"
+            }`}
+          >
+            {tab === "eligible"
+              ? "Eligible Certificates"
+              : "Issued Certificates"}
+          </button>
+        ))}
+      </div>
+
+      <section
+        id="eligible-certificates-panel"
+        role="tabpanel"
+        aria-labelledby="eligible-certificates-tab"
+        hidden={activeTab !== "eligible"}
+        className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+      >
         <div className="border-b border-slate-100 p-5">
           <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
             <div>
@@ -339,7 +380,13 @@ export default function CertificatesPage() {
         )}
       </section>
 
-      <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <section
+        id="issued-certificates-panel"
+        role="tabpanel"
+        aria-labelledby="issued-certificates-tab"
+        hidden={activeTab !== "issued"}
+        className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+      >
         <div className="flex flex-col justify-between gap-3 border-b border-slate-100 p-5 sm:flex-row sm:items-center">
           <div>
             <h2 className="text-lg font-bold text-slate-800">

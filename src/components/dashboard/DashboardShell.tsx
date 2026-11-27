@@ -14,17 +14,17 @@ import pyramidLogo from "@/assets/images/pyramidlogo.jpeg";
 import { dashboardQueryKeys, fetchDashboardData } from "@/lib/dashboard-data";
 
 const navigation = [
-  { label: "Dashboard", href: "/dashboard", icon: "⌂" },
-  { label: "Members", href: "/dashboard/members", icon: "♙" },
-  { label: "Enrollments", href: "/dashboard/enrollments", icon: "▤" },
-  { label: "Certificates", href: "/dashboard/certificates", icon: "🏅" },
-  { label: "Partners", href: "/dashboard/partners", icon: "◎" },
-  { label: "Beneficiaries", href: "/dashboard/beneficiaries", icon: "♡" },
-  { label: "Donors", href: "/dashboard/donors", icon: "♧" },
-  { label: "Programs", href: "/dashboard/programs", icon: "◈" },
-  { label: "Gallery", href: "/dashboard/gallery", icon: "▧" },
-  { label: "Reports", href: "/dashboard/reports", icon: "▥" },
-  { label: "Change password", href: "/dashboard/settings/password", icon: "⚿" },
+  { label: "Dashboard", href: "/dashboard", icon: "🏠︎" },
+  { label: "Members", href: "/dashboard/members", icon: "" },
+  { label: "Enrollments", href: "/dashboard/enrollments", icon: "" },
+  { label: "Certificates", href: "/dashboard/certificates", icon: "" },
+  { label: "Partners", href: "/dashboard/partners", icon: "" },
+  { label: "Beneficiaries", href: "/dashboard/beneficiaries", icon: "" },
+  { label: "Donors", href: "/dashboard/donors", icon: "" },
+  { label: "Programs", href: "/dashboard/programs", icon: "" },
+  { label: "Gallery", href: "/dashboard/gallery", icon: "" },
+  { label: "Reports", href: "/dashboard/reports", icon: "" },
+  { label: "Change password", href: "/dashboard/settings/password", icon: "" },
 ];
 
 type EnrollmentNotifications = {
@@ -197,10 +197,16 @@ function DashboardShellContent({
             </button>
 
             <div>
-              <p className="text-sm font-semibold uppercase tracking-wider text-sky-700">
-                Dashboard
+              <p className="text-sm font-semibold uppercase tracking-wider text-sky-600">
+                Dashboard of Pyramid Technical Institute
               </p>
             </div>
+
+<div className="absolute right-4 sm:right-8 md:right-20 lg:right-40 xl:right-60">
+  <p className="text-sm font-semibold uppercase tracking-wider text-dark-blue-600 mask-radial-from-neutral-400">
+    Welcome Back, Administrator
+  </p>
+</div>
           </div>
 
           <div className="flex items-center gap-3">
